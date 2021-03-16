@@ -1,5 +1,5 @@
 # Robot manipulator
-Interface of class "Manipulator":
+Interface of the class "Manipulator":
 addElement(), moveElement()
 
 An example of using the program:<br/>
