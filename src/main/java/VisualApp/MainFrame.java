@@ -8,7 +8,7 @@ public class MainFrame extends JFrame{
     private JPanel mainPanel;
     private JButton MoveMechanism;
     static Manipulator manipulator = new Manipulator();
-    static JFrame frame = new MainFrame("MainFrame");
+    static JFrame frame = new MainFrame("Manipulator");
     public MainFrame(String title) {
         super(title);
 
