@@ -9,13 +9,6 @@
       <minimumSize width="600" height="400"/>
     </properties>
     <border type="none"/>
-    <children>
-      <component id="e90c1" class="javax.swing.JButton" binding="MoveMechanism">
-        <constraints border-constraint="South"/>
-        <properties>
-          <text value="Move Mechanism"/>
-        </properties>
-      </component>
-    </children>
+    <children/>
   </grid>
 </form>
