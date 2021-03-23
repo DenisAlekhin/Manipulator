@@ -92,8 +92,8 @@ public class Manipulator extends JPanel {
             }
             if(mechanism.get(i) instanceof Rod) {
                 g2d.setStroke(new BasicStroke(5f));
-                g2d.drawLine(0,0, (int)((Rod)mechanism.get(i)).getCompression() * 125,0);
-                g2d.translate((int)((Rod)mechanism.get(i)).getCompression() * 125, 0);
+                g2d.drawLine(0,0, (int)(((Rod)mechanism.get(i)).getCompression() * 125.0),0);
+                g2d.translate((int)(((Rod)mechanism.get(i)).getCompression() * 125.0), 0);
             } else {
                 g2d.rotate(((Hinge)mechanism.get(i)).getAngle());
                 g2d.fillOval(-10,-10,20,20);
