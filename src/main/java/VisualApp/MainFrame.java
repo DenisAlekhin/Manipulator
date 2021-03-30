@@ -6,9 +6,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
+import java.awt.event.*;
 import java.beans.PropertyChangeListener;
 
 public class MainFrame extends JFrame{
@@ -19,6 +17,9 @@ public class MainFrame extends JFrame{
     private JSlider slider4;
     private JSlider slider5;
     private JSlider slider6;
+    private JSlider slider7;
+    private JSlider slider8;
+    private JButton resetTargetButton;
     static Manipulator manipulator = new Manipulator();
     static JFrame frame = new MainFrame("Manipulator");
     public MainFrame(String title) {
@@ -59,6 +60,26 @@ public class MainFrame extends JFrame{
                 frame.repaint();
             }
         });
+        slider7.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                manipulator.moveTarget(0, slider7.getValue());
+                frame.repaint();
+            }
+        });
+        slider8.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                manipulator.moveTarget(1, (double)slider8.getValue() / 100.0);
+                frame.repaint();
+            }
+        });
+        resetTargetButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                slider7.setValue(0);
+                slider8.setValue(100);
+                manipulator.resetTarget();
+                frame.repaint();
+            }
+        });
     }
 
     public static void main(String[] args) {
@@ -73,6 +94,7 @@ public class MainFrame extends JFrame{
         frame.setSize(1000,600);
         frame.add(manipulator);
         frame.add(new MainFrame("Manipulator").mainPanel, BorderLayout.SOUTH);
+        frame.addMouseListener(manipulator);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
     }
