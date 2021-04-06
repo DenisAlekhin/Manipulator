@@ -192,7 +192,6 @@ public class Manipulator extends JPanel implements MouseListener{
         String y1 = "(170+125*x1*sin(x0)+125*x3*sin(x0+x2))";
         String x2 = Double.toString(targetPoint.getX());
         String y2 = Double.toString(targetPoint.getY());
-        System.out.printf("Target: (" +x2 + ", "+ y2+")\n");
         return "sqrt((" + x2 + "-" + x1 + ")*" + "(" + x2 + "-" + x1 + ")+"
                 + "(" + y2 + "-" + y1 + ")*" + "(" + y2 + "-" + y1 + "))";
     }
@@ -208,7 +207,6 @@ public class Manipulator extends JPanel implements MouseListener{
             } else {
                 moveElement(i, elements.get(i));
             }
-
         }
     }
 
@@ -225,12 +223,12 @@ public class Manipulator extends JPanel implements MouseListener{
                 boundA.add(-Math.PI);
                 boundB.add(Math.PI);
             } else {
-                boundA.add(0.01);
+                boundA.add(0.3);
                 boundB.add(1.0);
             }
 
         }
-        GlobalSearch globalSearch = new GlobalSearch(function, boundA, boundB, 0.0001, 1.1);
+        GlobalSearch globalSearch = new GlobalSearch(function, boundA, boundB, 0.0001, 1.5);
         ArrayList<Double> result = globalSearch.findMinimum();
         moveManipulator(result);
         repaint();

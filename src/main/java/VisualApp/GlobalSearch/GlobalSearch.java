@@ -48,16 +48,18 @@ public class GlobalSearch {
         int countOfDimensions = function.getVariableNames().size();
 
         for(int i = 0; i < countOfDimensions; i++) {
-            result.add(0.5);
+                result.add(0.0);
         }
 
-        for(int i = countOfDimensions - 1; i >= 0; i--) {
-            for(int j = 0; j < countOfDimensions; j++) {
-                if(j != i) {
-                    function.setVariable("x" + j, result.get(j));
+        for(int k = 0; k < 10; k++) {
+            for(int i = countOfDimensions - 1; i >= 0; i--) {
+                for(int j = 0; j < countOfDimensions; j++) {
+                    if(j != i) {
+                        function.setVariable("x" + j, result.get(j));
+                    }
                 }
+                result.set(i, findOneDimensionalMinimum(function, "x" + i, i).getKey());
             }
-            result.set(i, findOneDimensionalMinimum(function, "x" + i, i).getKey());
         }
 
         for(int j = 0; j < countOfDimensions; j++) {

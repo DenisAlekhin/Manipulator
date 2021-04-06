@@ -103,6 +103,7 @@ public class MainFrame extends JFrame{
 
 
         frame.setSize(1000,600);
+        frame.setResizable(false);
         frame.add(manipulator);
         frame.add(new MainFrame("Manipulator").mainPanel, BorderLayout.SOUTH);
         frame.addMouseListener(manipulator);
