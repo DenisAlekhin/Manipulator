@@ -1,8 +1,11 @@
 package VisualApp.Manipulator;
 
+import VisualApp.GlobalSearch.GlobalSearch;
 import VisualApp.Manipulator.Elements.Element;
 import VisualApp.Manipulator.Elements.Hinge;
 import VisualApp.Manipulator.Elements.Rod;
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,14 +14,17 @@ import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.Vector;
 
 public class Manipulator extends JPanel implements MouseListener{
     private Vector<Element> mechanism = new Vector();
     private AffineTransform Default;
     private AffineTransform startPoint;
-    Point selectedPoint;
-    Point targetPoint;
+    private AffineTransform zero;
+    Point2D selectedPoint;
+    Point2D targetPoint;
+    Point2D currentPoint;
     private Vector<Element> targetConstruction = new Vector();
     int selectedHinge = -1;
 
@@ -79,6 +85,7 @@ public class Manipulator extends JPanel implements MouseListener{
     }
 
     private void paintBase(Graphics2D g2d) {
+        zero = g2d.getTransform();
         g2d.translate(75, getHeight() / 2);
         startPoint = g2d.getTransform();
         g2d.setColor(Color.gray);
@@ -90,9 +97,9 @@ public class Manipulator extends JPanel implements MouseListener{
     private void checkSelectedHinge(int index, Graphics2D g2d) {
         if (selectedPoint != null) {
             AffineTransform at = g2d.getTransform();
-            Point2D screenPoint = at.transform(new Point.Double(0, 0), new Point2D.Double());
-            Ellipse2D ellipse = new Ellipse2D.Double(screenPoint.getX() - 10, screenPoint.getY() - 10, 20, 20);
-            if (ellipse.contains(selectedPoint.x, selectedPoint.y)) {
+            currentPoint = at.transform(new Point.Double(0, 0), new Point2D.Double());
+            Ellipse2D ellipse = new Ellipse2D.Double(currentPoint.getX() - 10, currentPoint.getY() - 10, 20, 20);
+            if (ellipse.contains(selectedPoint.getX(), selectedPoint.getY())) {
                 selectedHinge = index;
             }
         }
@@ -103,7 +110,7 @@ public class Manipulator extends JPanel implements MouseListener{
         if(targetPoint != null) {
             g2d.setTransform(startPoint);
             Point2D screenPoint = g2d.getTransform().transform(new Point.Double(0, 0), new Point2D.Double());
-            g2d.translate(targetPoint.x - (int)screenPoint.getX(), targetPoint.y - (int)screenPoint.getY());
+            g2d.translate(targetPoint.getX() - (int)screenPoint.getX(), targetPoint.getY() - (int)screenPoint.getY());
             g2d.rotate(((Hinge)targetConstruction.get(0)).getAngle());
             g2d.setColor(Color.green);
             g2d.fillOval(
@@ -171,12 +178,47 @@ public class Manipulator extends JPanel implements MouseListener{
             paintElement(i, g2d);
         }
         paintTarget(g2d);
+        zero = g2d.getTransform();
     }
 
     public void resetTarget(){
         targetPoint = null;
         selectedHinge = -1;
         selectedPoint = null;
+    }
+    private String buildMinimisationFunction() {
+
+        String x1 = "(75+125*cos(x)+125*cos(x+y))";
+        String y1 = "(170+125*sin(x)+125*sin(x+y))";
+        String x2 = Double.toString(targetPoint.getX());
+        String y2 = Double.toString(targetPoint.getY());
+        System.out.printf("Target: (" +x2 + ", "+ y2+")\n");
+        return "sqrt((" + x2 + "-" + x1 + ")*" + "(" + x2 + "-" + x1 + ")+"
+                + "(" + y2 + "-" + y1 + ")*" + "(" + y2 + "-" + y1 + "))";
+    }
+
+    private double convertAngleToDeg(double angle) {
+        return angle * 180 / Math.PI;
+    }
+
+    private void moveManipulator(ArrayList<Double> elements) {
+        moveElement(0, convertAngleToDeg(elements.get(0)));
+        moveElement(2, convertAngleToDeg(elements.get(1)));
+    }
+
+    public void setToTarget() {
+        String funcSrt = buildMinimisationFunction();
+        Expression function = new
+                ExpressionBuilder(funcSrt)
+                .variables("x", "y")
+                .build();
+        GlobalSearch globalSearch = new GlobalSearch(function, -Math.PI, Math.PI, 0.0001, 1.1);
+        ArrayList<Double> result = globalSearch.findMinimum();
+        moveManipulator(result);
+        repaint();
+
+        System.out.printf("Result: (%.3f, %.3f, %.3f)\n",result.get(0), result.get(1), result.get(2));
+        //globalSearch.printAnalysis();
     }
 
     public void mouseClicked(MouseEvent e) {}
@@ -186,12 +228,14 @@ public class Manipulator extends JPanel implements MouseListener{
     public void mousePressed(MouseEvent e) {
         if(selectedHinge == -1) {
             selectedPoint = e.getPoint();
-            selectedPoint.x -= 8;
-            selectedPoint.y -= 31;
+            selectedPoint.setLocation(
+                    selectedPoint.getX() - 8,
+                    selectedPoint.getY() - 31);
         } else {
             targetPoint = e.getPoint();
-            targetPoint.x -= 8;
-            targetPoint.y -= 31;
+            targetPoint.setLocation(
+                    targetPoint.getX() - 8,
+                    targetPoint.getY() - 31);
         }
         repaint();
     }

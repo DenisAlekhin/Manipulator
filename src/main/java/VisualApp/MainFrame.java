@@ -1,6 +1,10 @@
 package VisualApp;
 
+import VisualApp.GlobalSearch.GlobalSearch;
 import VisualApp.Manipulator.Manipulator;
+import javafx.util.Pair;
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -8,6 +12,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 
 public class MainFrame extends JFrame{
     private JPanel mainPanel;
@@ -20,6 +25,7 @@ public class MainFrame extends JFrame{
     private JSlider slider7;
     private JSlider slider8;
     private JButton resetTargetButton;
+    private JButton buttonMove;
     static Manipulator manipulator = new Manipulator();
     static JFrame frame = new MainFrame("Manipulator");
     public MainFrame(String title) {
@@ -78,6 +84,11 @@ public class MainFrame extends JFrame{
                 slider8.setValue(100);
                 manipulator.resetTarget();
                 frame.repaint();
+            }
+        });
+        buttonMove.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                manipulator.setToTarget();
             }
         });
     }

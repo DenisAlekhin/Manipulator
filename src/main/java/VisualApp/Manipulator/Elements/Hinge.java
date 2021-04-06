@@ -12,14 +12,14 @@ public class Hinge extends Element{
                 e.printStackTrace();
             }
         }
-        this.angle = convertAngle(angle);
+        this.angle = convertAngleToRad(angle);
     }
 
     public double getAngle() {
         return angle;
     }
 
-    private double convertAngle(double angle) {
+    private double convertAngleToRad(double angle) {
         return angle * Math.PI / 180.0;
     }
 }
