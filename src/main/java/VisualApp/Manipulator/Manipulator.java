@@ -188,8 +188,8 @@ public class Manipulator extends JPanel implements MouseListener{
     }
     private String buildMinimisationFunction() {
 
-        String x1 = "(75+125*cos(x)+125*cos(x+y))";
-        String y1 = "(170+125*sin(x)+125*sin(x+y))";
+        String x1 = "(75+125*x1*cos(x0)+125*x3*cos(x0+x2))";
+        String y1 = "(170+125*x1*sin(x0)+125*x3*sin(x0+x2))";
         String x2 = Double.toString(targetPoint.getX());
         String y2 = Double.toString(targetPoint.getY());
         System.out.printf("Target: (" +x2 + ", "+ y2+")\n");
@@ -202,22 +202,41 @@ public class Manipulator extends JPanel implements MouseListener{
     }
 
     private void moveManipulator(ArrayList<Double> elements) {
-        moveElement(0, convertAngleToDeg(elements.get(0)));
-        moveElement(2, convertAngleToDeg(elements.get(1)));
+        for(int i = 0; i < elements.size() - 1; i++) {
+            if(i % 2 == 0) {
+                moveElement(i, convertAngleToDeg(elements.get(i)));
+            } else {
+                moveElement(i, elements.get(i));
+            }
+
+        }
     }
 
     public void setToTarget() {
         String funcSrt = buildMinimisationFunction();
         Expression function = new
                 ExpressionBuilder(funcSrt)
-                .variables("x", "y")
+                .variables("x0", "x1", "x2", "x3")
                 .build();
-        GlobalSearch globalSearch = new GlobalSearch(function, -Math.PI, Math.PI, 0.0001, 1.1);
+        ArrayList<Double> boundA = new ArrayList<Double>();
+        ArrayList<Double> boundB = new ArrayList<Double>();
+        for(int i = 0; i < function.getVariableNames().size(); i++) {
+            if(i % 2 == 0) {
+                boundA.add(-Math.PI);
+                boundB.add(Math.PI);
+            } else {
+                boundA.add(0.01);
+                boundB.add(1.0);
+            }
+
+        }
+        GlobalSearch globalSearch = new GlobalSearch(function, boundA, boundB, 0.0001, 1.1);
         ArrayList<Double> result = globalSearch.findMinimum();
         moveManipulator(result);
         repaint();
 
-        System.out.printf("Result: (%.3f, %.3f, %.3f)\n",result.get(0), result.get(1), result.get(2));
+        System.out.printf("Result: (%.3f, %.3f, %.3f, %.3f, %.3f)\n",
+                result.get(0), result.get(1), result.get(2), result.get(3), result.get(4));
         //globalSearch.printAnalysis();
     }
 

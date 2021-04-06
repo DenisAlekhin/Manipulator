@@ -9,16 +9,21 @@ import java.util.Comparator;
 
 public class GlobalSearch {
     private Expression function;
-    private double a, b;
+    private ArrayList<Double> a, b;
     private double r, epsilon;
     private double m;
     private ArrayList<Pair<Double, Double>> analysis;
 
-    public GlobalSearch(Expression function, double a, double b,
+    public GlobalSearch(Expression function, ArrayList<Double> a, ArrayList<Double> b,
                         double epsilon, double r) {
         try {
-            if(a > b) {
-                throw new Exception("Error: a > b");
+            if(a.size() != b.size()) {
+                throw new Exception("Error: wrong count of borders");
+            }
+            for(int i = 0; i < a.size(); i++) {
+                if(a.get(i) > b.get(i)) {
+                    throw new Exception("Error: a > b");
+                }
             }
             if(r <= 0) {
                 throw new Exception("Error: r <= 1");
@@ -40,44 +45,32 @@ public class GlobalSearch {
 
     public ArrayList<Double> findMinimum(){
         ArrayList<Double> result = new ArrayList<Double>();
-        if(function.getVariableNames().size() == 1) {
-            Pair<Double, Double> pairResult = findOneDimensionalMinimum(function, "x");
-            result.add(pairResult.getKey());
-            result.add(pairResult.getValue());
-        } else {
-            result.add(0, 1.0);
-            function.setVariable("x", result.get(0));
-            result.add(1, findOneDimensionalMinimum(function, "y").getKey());
-            function.setVariable("y", result.get(1));
-            result.set(0, findOneDimensionalMinimum(function, "x").getKey());
-            result.add(2, findOneDimensionalMinimum(function, "x").getValue());
+        int countOfDimensions = function.getVariableNames().size();
+
+        for(int i = 0; i < countOfDimensions; i++) {
+            result.add(0.5);
         }
+
+        for(int i = countOfDimensions - 1; i >= 0; i--) {
+            for(int j = 0; j < countOfDimensions; j++) {
+                if(j != i) {
+                    function.setVariable("x" + j, result.get(j));
+                }
+            }
+            result.set(i, findOneDimensionalMinimum(function, "x" + i, i).getKey());
+        }
+
+        for(int j = 0; j < countOfDimensions; j++) {
+            function.setVariable("x" + j, result.get(j));
+        }
+        result.add(countOfDimensions, function.evaluate());
         return result;
     }
 
-    /*
-    else {
-            for(int i = 0; i < function.getVariableNames().size(); i++) {
-                for(int j = 0; j < function.getVariableNames().size() - i - 1; j++) {
-                    //result.add(j, 1.0);
-                    function.setVariable("x" + i, result.get(i));
-                }
-                function.setVariable("x" + i, result.get(i));
-                result.add(1, findOneDimensionalMinimum(function, "y").getKey());
-            }
-            result.add(0, 0.1);
-            function.setVariable("x", result.get(0));
-            result.add(1, findOneDimensionalMinimum(function, "y").getKey());
-            function.setVariable("y", result.get(1));
-            result.set(0, findOneDimensionalMinimum(function, "x").getKey());
-            result.add(2, findOneDimensionalMinimum(function, "x").getValue());
-        }
-     */
-
-    private Pair<Double, Double> findOneDimensionalMinimum(Expression function, String variable){
+    private Pair<Double, Double> findOneDimensionalMinimum(Expression function, String variable, int numberOfVariable){
         analysis.clear();
-        analysis.add(new Pair<Double, Double>(a, function.setVariable(variable, a).evaluate()));
-        analysis.add(new Pair<Double, Double>(b, function.setVariable(variable, b).evaluate()));
+        analysis.add(new Pair<Double, Double>(a.get(numberOfVariable), function.setVariable(variable, a.get(numberOfVariable)).evaluate()));
+        analysis.add(new Pair<Double, Double>(b.get(numberOfVariable), function.setVariable(variable, b.get(numberOfVariable)).evaluate()));
 
         int t = 0;
         do {
