@@ -4,29 +4,35 @@ import VisualApp.GlobalSearch.GlobalSearch;
 import VisualApp.Manipulator.Elements.Element;
 import VisualApp.Manipulator.Elements.Hinge;
 import VisualApp.Manipulator.Elements.Rod;
+import javafx.util.Pair;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Vector;
 
 public class Manipulator extends JPanel implements MouseListener{
+    final double R = 1.5;
+    final double EPSILON = 0.01;
     private Vector<Element> mechanism = new Vector();
     private AffineTransform Default;
     private AffineTransform startPoint;
-    private AffineTransform zero;
     Point2D selectedPoint;
     Point2D targetPoint;
     Point2D currentPoint;
     private Vector<Element> targetConstruction = new Vector();
     int selectedHinge = -1;
+    Timer timer;
 
     {
         targetConstruction.add(new Hinge(0, -1));
@@ -85,7 +91,6 @@ public class Manipulator extends JPanel implements MouseListener{
     }
 
     private void paintBase(Graphics2D g2d) {
-        zero = g2d.getTransform();
         g2d.translate(75, getHeight() / 2);
         startPoint = g2d.getTransform();
         g2d.setColor(Color.gray);
@@ -178,7 +183,6 @@ public class Manipulator extends JPanel implements MouseListener{
             paintElement(i, g2d);
         }
         paintTarget(g2d);
-        zero = g2d.getTransform();
     }
 
     public void resetTarget(){
@@ -186,56 +190,145 @@ public class Manipulator extends JPanel implements MouseListener{
         selectedHinge = -1;
         selectedPoint = null;
     }
-    private String buildMinimisationFunction() {
-
-        String x1 = "(75+125*x1*cos(x0)+125*x3*cos(x0+x2))";
-        String y1 = "(170+125*x1*sin(x0)+125*x3*sin(x0+x2))";
+    private Expression buildExpression(boolean onlyHingesMoves) {
         String x2 = Double.toString(targetPoint.getX());
         String y2 = Double.toString(targetPoint.getY());
-        return "sqrt((" + x2 + "-" + x1 + ")*" + "(" + x2 + "-" + x1 + ")+"
-                + "(" + y2 + "-" + y1 + ")*" + "(" + y2 + "-" + y1 + "))";
+        if(onlyHingesMoves) {
+            String x1 = "(75+125*" + ((Rod)mechanism.get(1)).getCompression() +
+                    "cos(x0)+125*" + ((Rod)mechanism.get(3)).getCompression() + "cos(x0+x1))";
+            String y1 = "(140+125*" + ((Rod)mechanism.get(1)).getCompression() +
+                    "sin(x0)+125*" + ((Rod)mechanism.get(3)).getCompression() + "sin(x0+x1))";
+            String func = "sqrt((" + x2 + "-" + x1 + ")*" + "(" + x2 + "-" + x1 + ")+"
+                    + "(" + y2 + "-" + y1 + ")*" + "(" + y2 + "-" + y1 + "))";
+            return new ExpressionBuilder(func)
+                    .variables("x0", "x1")
+                    .build();
+        } else {
+            String x1 = "(75+125*x1*cos(x0)+125*x3*cos(x0+x2))";
+            String y1 = "(140+125*x1*sin(x0)+125*x3*sin(x0+x2))";
+            String func = "sqrt((" + x2 + "-" + x1 + ")*" + "(" + x2 + "-" + x1 + ")+"
+                    + "(" + y2 + "-" + y1 + ")*" + "(" + y2 + "-" + y1 + "))";
+            return new ExpressionBuilder(func)
+                    .variables("x0", "x1", "x2", "x3")
+                    .build();
+        }
     }
 
     private double convertAngleToDeg(double angle) {
         return angle * 180 / Math.PI;
     }
 
-    private void moveManipulator(ArrayList<Double> elements) {
-        for(int i = 0; i < elements.size() - 1; i++) {
-            if(i % 2 == 0) {
-                moveElement(i, convertAngleToDeg(elements.get(i)));
-            } else {
-                moveElement(i, elements.get(i));
+    private void moveManipulator(ArrayList<Double> elements, boolean onlyHingesMoves) {
+        if(onlyHingesMoves) {
+            for(int i = 0; i < elements.size() - 1; i++) {
+                moveElement(i*2, convertAngleToDeg(elements.get(i)));
+            }
+        } else {
+            for(int i = 0; i < elements.size() - 1; i++) {
+                if(i % 2 == 0) {
+                    moveElement(i, convertAngleToDeg(elements.get(i)));
+                } else {
+                    moveElement(i, elements.get(i));
+                }
             }
         }
     }
 
-    public void setToTarget() {
-        String funcSrt = buildMinimisationFunction();
-        Expression function = new
-                ExpressionBuilder(funcSrt)
-                .variables("x0", "x1", "x2", "x3")
-                .build();
+    public void setToTarget(boolean onlyHingesMoves) {
+        GlobalSearch globalSearch = setUpGlobalSearch(onlyHingesMoves);
+        ArrayList<Double> result = globalSearch.findMinimum();
+        moveManipulator(result, onlyHingesMoves);
+        setTwoLastElements();
+        repaint();
+        printResult(result);
+    }
+
+    public void animatedSetToTarget(int timeout, boolean onlyHingesMoves) {
+        GlobalSearch globalSearch = setUpGlobalSearch(onlyHingesMoves);
+        globalSearch.findMinimum();
+        ArrayList<ArrayList<Double>> stepsOfAlgorithm = globalSearch.getStepsOfAlgorithm();
+        stepsAnimation(stepsOfAlgorithm, timeout, onlyHingesMoves);
+
+        repaint();
+        printResult(stepsOfAlgorithm.get(stepsOfAlgorithm.size() - 1));
+    }
+
+    private void setTwoLastElements() {
+        double hingeAngle = -(((Hinge)mechanism.get(0)).getAngle()
+                + ((Hinge)mechanism.get(2)).getAngle())
+                + ((Hinge)targetConstruction.get(0)).getAngle();
+        hingeAngle = hingeAngle * 180 / Math.PI;
+        moveElement(4, hingeAngle);
+        moveElement(5, ((Rod)targetConstruction.get(1)).getCompression());
+    }
+
+    private void printResult(ArrayList<Double> result) {
+        DecimalFormat df = new DecimalFormat("#.###");
+        System.out.print("Result: (");
+        for(int i = 0; i < result.size(); i++) {
+            System.out.print(df.format(result.get(i)));
+            if(i != result.size() - 1) {
+                System.out.print(",");
+            } else {
+                System.out.print(")\n");
+            }
+        }
+    }
+
+    private void printAlgorithmStep(int k, ArrayList<Double> step) {
+        DecimalFormat df = new DecimalFormat("#.###");
+        System.out.print("Step " + k + ": (");
+        for(int i = 0; i < step.size(); i++) {
+            System.out.print(df.format(step.get(i)));
+            if(i != step.size() - 1) {
+                System.out.print(",");
+            } else {
+                System.out.print(")\n");
+            }
+        }
+    }
+
+    private GlobalSearch setUpGlobalSearch(boolean onlyHingesMoves) {
+        Expression function = buildExpression(onlyHingesMoves);
         ArrayList<Double> boundA = new ArrayList<Double>();
         ArrayList<Double> boundB = new ArrayList<Double>();
-        for(int i = 0; i < function.getVariableNames().size(); i++) {
-            if(i % 2 == 0) {
+        if(onlyHingesMoves) {
+            for(int i = 0; i < function.getVariableNames().size(); i++) {
                 boundA.add(-Math.PI);
                 boundB.add(Math.PI);
-            } else {
-                boundA.add(0.3);
-                boundB.add(1.0);
             }
-
+        } else {
+            for(int i = 0; i < function.getVariableNames().size(); i++) {
+                if(i % 2 == 0) {
+                    boundA.add(-Math.PI);
+                    boundB.add(Math.PI);
+                } else {
+                    boundA.add(0.3);
+                    boundB.add(1.0);
+                }
+            }
         }
-        GlobalSearch globalSearch = new GlobalSearch(function, boundA, boundB, 0.0001, 1.5);
-        ArrayList<Double> result = globalSearch.findMinimum();
-        moveManipulator(result);
-        repaint();
+        return new GlobalSearch(function, boundA, boundB, EPSILON, R);
+    }
 
-        System.out.printf("Result: (%.3f, %.3f, %.3f, %.3f, %.3f)\n",
-                result.get(0), result.get(1), result.get(2), result.get(3), result.get(4));
-        //globalSearch.printAnalysis();
+    private void stepsAnimation(final ArrayList<ArrayList<Double>> stepsOfAlgorithm,
+                                int timeout, final boolean onlyHingesMoves) {
+        timer = new Timer(timeout, new ActionListener() {
+            int i = 0;
+            public void actionPerformed(ActionEvent evt) {
+                if(i < stepsOfAlgorithm.size()) {
+                    printAlgorithmStep(i, stepsOfAlgorithm.get(i));
+                    moveManipulator(stepsOfAlgorithm.get(i), onlyHingesMoves);
+                    repaint();
+                    i++;
+                } else {
+                    timer.stop();
+                    setTwoLastElements();
+                    repaint();
+                }
+            }
+        });
+        timer.start();
     }
 
     public void mouseClicked(MouseEvent e) {}

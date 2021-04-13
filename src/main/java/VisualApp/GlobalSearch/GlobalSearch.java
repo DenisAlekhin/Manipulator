@@ -13,6 +13,8 @@ public class GlobalSearch {
     private double r, epsilon;
     private double m;
     private ArrayList<Pair<Double, Double>> analysis;
+    private ArrayList<Pair<Double, Double>> stepsOfOneDimensionalAlgorithm;
+    private ArrayList<ArrayList<Double>> stepsOfAlgorithm;
 
     public GlobalSearch(Expression function, ArrayList<Double> a, ArrayList<Double> b,
                         double epsilon, double r) {
@@ -41,6 +43,8 @@ public class GlobalSearch {
         this.epsilon = epsilon;
         this.r = r;
         analysis = new ArrayList<Pair<Double, Double>>();
+        stepsOfOneDimensionalAlgorithm = new ArrayList<Pair<Double, Double>>();
+        stepsOfAlgorithm = new ArrayList<ArrayList<Double>>();
     }
 
     public ArrayList<Double> findMinimum(){
@@ -48,17 +52,40 @@ public class GlobalSearch {
         int countOfDimensions = function.getVariableNames().size();
 
         for(int i = 0; i < countOfDimensions; i++) {
-                result.add(0.0);
+            result.add(1.0);
+            function.setVariable("x" + i, result.get(i));
         }
 
-        for(int k = 0; k < 10; k++) {
-            for(int i = countOfDimensions - 1; i >= 0; i--) {
-                for(int j = 0; j < countOfDimensions; j++) {
-                    if(j != i) {
-                        function.setVariable("x" + j, result.get(j));
-                    }
+        stepsOfAlgorithm.add(new ArrayList<Double>(result));
+        stepsOfAlgorithm.get(stepsOfAlgorithm.size() - 1).add(function.evaluate());
+
+        for(int i = countOfDimensions - 1; i >= 0; i--) {
+            result.set(i, findOneDimensionalMinimum(function, "x" + i, i).getKey());
+            function.setVariable("x" + i, result.get(i));
+
+            for(int p = 0; p < stepsOfOneDimensionalAlgorithm.size(); p++) {
+                result.set(i, stepsOfOneDimensionalAlgorithm.get(p).getKey());
+                stepsOfAlgorithm.add(new ArrayList<Double>(result));
+                stepsOfAlgorithm.get(stepsOfAlgorithm.size() - 1).add(function.evaluate());
+            }
+
+            for(int k = i + 1; k < countOfDimensions; k++) {
+                result.set(k, findOneDimensionalMinimum(function, "x" + k, k).getKey());
+                function.setVariable("x" + k, result.get(k));
+
+                for(int p = 0; p < stepsOfOneDimensionalAlgorithm.size(); p++) {
+                    result.set(k, stepsOfOneDimensionalAlgorithm.get(p).getKey());
+                    stepsOfAlgorithm.add(new ArrayList<Double>(result));
+                    stepsOfAlgorithm.get(stepsOfAlgorithm.size() - 1).add(function.evaluate());
                 }
-                result.set(i, findOneDimensionalMinimum(function, "x" + i, i).getKey());
+            }
+            result.set(i, findOneDimensionalMinimum(function, "x" + i, i).getKey());
+            function.setVariable("x" + i, result.get(i));
+
+            for(int p = 0; p < stepsOfOneDimensionalAlgorithm.size(); p++) {
+                result.set(i, stepsOfOneDimensionalAlgorithm.get(p).getKey());
+                stepsOfAlgorithm.add(new ArrayList<Double>(result));
+                stepsOfAlgorithm.get(stepsOfAlgorithm.size() - 1).add(function.evaluate());
             }
         }
 
@@ -71,11 +98,14 @@ public class GlobalSearch {
 
     private Pair<Double, Double> findOneDimensionalMinimum(Expression function, String variable, int numberOfVariable){
         analysis.clear();
-        analysis.add(new Pair<Double, Double>(a.get(numberOfVariable), function.setVariable(variable, a.get(numberOfVariable)).evaluate()));
-        analysis.add(new Pair<Double, Double>(b.get(numberOfVariable), function.setVariable(variable, b.get(numberOfVariable)).evaluate()));
+        analysis.add(new Pair<Double, Double>(a.get(numberOfVariable),
+                function.setVariable(variable, a.get(numberOfVariable)).evaluate()));
+        analysis.add(new Pair<Double, Double>(b.get(numberOfVariable),
+                function.setVariable(variable, b.get(numberOfVariable)).evaluate()));
 
         int t = 0;
         do {
+            stepsOfOneDimensionalAlgorithm.clear();
             sortAnalysisByFirstValue();
             try {
                 calculate_m();
@@ -87,6 +117,7 @@ public class GlobalSearch {
             double newStudyX = (analysis.get(t).getKey() + analysis.get(t - 1).getKey()) / 2 -
                     (analysis.get(t).getValue() - analysis.get(t - 1).getValue()) / (2 * m);
             analysis.add(new Pair<Double, Double>(newStudyX, function.setVariable(variable, newStudyX).evaluate()));
+            stepsOfOneDimensionalAlgorithm.add(new Pair<Double, Double>(newStudyX, function.setVariable(variable, newStudyX).evaluate()));
             if (newStudyX < analysis.get(t - 1).getKey() || newStudyX > analysis.get(t).getKey())
                 try {
                     throw new Exception("Error: New study out of range");
@@ -99,6 +130,8 @@ public class GlobalSearch {
 
         return analysis.get(0);
     }
+
+    public ArrayList<ArrayList<Double>> getStepsOfAlgorithm() { return stepsOfAlgorithm; }
 
     public void printAnalysis() {
         sortAnalysisByFirstValue();

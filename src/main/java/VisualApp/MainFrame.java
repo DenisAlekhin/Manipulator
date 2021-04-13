@@ -26,8 +26,14 @@ public class MainFrame extends JFrame{
     private JSlider slider8;
     private JButton resetTargetButton;
     private JButton buttonMove;
+    private JButton btnGlbSearchSteps;
+    private JCheckBox checkBoxOnlyHingesMoves;
     static Manipulator manipulator = new Manipulator();
     static JFrame frame = new MainFrame("Manipulator");
+
+    {
+        checkBoxOnlyHingesMoves.setSelected(true);
+    }
     public MainFrame(String title) {
         super(title);
         slider5.addChangeListener(new ChangeListener() {
@@ -88,7 +94,12 @@ public class MainFrame extends JFrame{
         });
         buttonMove.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                manipulator.setToTarget();
+                manipulator.setToTarget(checkBoxOnlyHingesMoves.isSelected());
+            }
+        });
+        btnGlbSearchSteps.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                manipulator.animatedSetToTarget(100, checkBoxOnlyHingesMoves.isSelected());
             }
         });
     }
