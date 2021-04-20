@@ -11,13 +11,15 @@ public class GlobalSearch {
     private Expression function;
     private ArrayList<Double> a, b;
     private double r, epsilon;
+    private int numOfIter;
     private double m;
+    private boolean onlyHingesMoves;
     private ArrayList<Pair<Double, Double>> analysis;
     private ArrayList<Pair<Double, Double>> stepsOfOneDimensionalAlgorithm;
     private ArrayList<ArrayList<Double>> stepsOfAlgorithm;
 
     public GlobalSearch(Expression function, ArrayList<Double> a, ArrayList<Double> b,
-                        double epsilon, double r) {
+                        double epsilon, double r, boolean onlyHingesMoves) {
         try {
             if(a.size() != b.size()) {
                 throw new Exception("Error: wrong count of borders");
@@ -42,6 +44,8 @@ public class GlobalSearch {
         this.b = b;
         this.epsilon = epsilon;
         this.r = r;
+        this.onlyHingesMoves = onlyHingesMoves;
+        this.numOfIter = (int) (1 / (epsilon * 10));
         analysis = new ArrayList<Pair<Double, Double>>();
         stepsOfOneDimensionalAlgorithm = new ArrayList<Pair<Double, Double>>();
         stepsOfAlgorithm = new ArrayList<ArrayList<Double>>();
@@ -50,44 +54,54 @@ public class GlobalSearch {
     public ArrayList<Double> findMinimum(){
         ArrayList<Double> result = new ArrayList<Double>();
         int countOfDimensions = function.getVariableNames().size();
+        ArrayList<Integer> countOfCalc= new ArrayList<Integer>();
 
         for(int i = 0; i < countOfDimensions; i++) {
-            result.add(1.0);
+            if(!onlyHingesMoves && i % 2 != 0) {
+                result.add(1.0);
+            } else {
+                result.add(0.0);
+            }
+            countOfCalc.add(0);
             function.setVariable("x" + i, result.get(i));
         }
 
         stepsOfAlgorithm.add(new ArrayList<Double>(result));
         stepsOfAlgorithm.get(stepsOfAlgorithm.size() - 1).add(function.evaluate());
 
-        for(int i = countOfDimensions - 1; i >= 0; i--) {
-            result.set(i, findOneDimensionalMinimum(function, "x" + i, i).getKey());
-            function.setVariable("x" + i, result.get(i));
-
-            for(int p = 0; p < stepsOfOneDimensionalAlgorithm.size(); p++) {
-                result.set(i, stepsOfOneDimensionalAlgorithm.get(p).getKey());
-                stepsOfAlgorithm.add(new ArrayList<Double>(result));
-                stepsOfAlgorithm.get(stepsOfAlgorithm.size() - 1).add(function.evaluate());
-            }
-
-            for(int k = i + 1; k < countOfDimensions; k++) {
-                result.set(k, findOneDimensionalMinimum(function, "x" + k, k).getKey());
-                function.setVariable("x" + k, result.get(k));
-
-                for(int p = 0; p < stepsOfOneDimensionalAlgorithm.size(); p++) {
-                    result.set(k, stepsOfOneDimensionalAlgorithm.get(p).getKey());
-                    stepsOfAlgorithm.add(new ArrayList<Double>(result));
-                    stepsOfAlgorithm.get(stepsOfAlgorithm.size() - 1).add(function.evaluate());
+        // forward
+        for(int n = 0; n < numOfIter; n++) {
+            for(int i = 0; i < countOfDimensions; i++) {
+                countOfCalc.set(i, countOfCalc.get(i) + 1);
+                result.set(i, findOneDimensionalMinimum(function, "x" + i, i).getKey());
+                function.setVariable("x" + i, result.get(i));
+                saveStepsOfAlgorithm(result, i);
+                if(i != 0 && countOfCalc.get(i) < 2) {
+                    for(int k = i - 1; k > 0; k--) {
+                        countOfCalc.set(k, 0);
+                    }
+                    i = -1;
                 }
             }
-            result.set(i, findOneDimensionalMinimum(function, "x" + i, i).getKey());
-            function.setVariable("x" + i, result.get(i));
-
-            for(int p = 0; p < stepsOfOneDimensionalAlgorithm.size(); p++) {
-                result.set(i, stepsOfOneDimensionalAlgorithm.get(p).getKey());
-                stepsOfAlgorithm.add(new ArrayList<Double>(result));
-                stepsOfAlgorithm.get(stepsOfAlgorithm.size() - 1).add(function.evaluate());
-            }
         }
+
+
+        // backward
+        /*
+        for(int n = 0; n < numOfIter; n++) {
+            for(int i = countOfDimensions - 1; i >= 0; i--) {
+                countOfCalc.set(i, countOfCalc.get(i) + 1);
+                result.set(i, findOneDimensionalMinimum(function, "x" + i, i).getKey());
+                function.setVariable("x" + i, result.get(i));
+                saveStepsOfAlgorithm(result, i);
+                if(i != countOfDimensions - 1 && countOfCalc.get(i) < 2) {
+                    for(int k = i + 1; k < countOfDimensions - 1; k++) {
+                        countOfCalc.set(k, 0);
+                    }
+                    i = countOfDimensions;
+                }
+            }
+        }*/
 
         for(int j = 0; j < countOfDimensions; j++) {
             function.setVariable("x" + j, result.get(j));
@@ -98,6 +112,7 @@ public class GlobalSearch {
 
     private Pair<Double, Double> findOneDimensionalMinimum(Expression function, String variable, int numberOfVariable){
         analysis.clear();
+        stepsOfOneDimensionalAlgorithm.clear();
         analysis.add(new Pair<Double, Double>(a.get(numberOfVariable),
                 function.setVariable(variable, a.get(numberOfVariable)).evaluate()));
         analysis.add(new Pair<Double, Double>(b.get(numberOfVariable),
@@ -105,7 +120,6 @@ public class GlobalSearch {
 
         int t = 0;
         do {
-            stepsOfOneDimensionalAlgorithm.clear();
             sortAnalysisByFirstValue();
             try {
                 calculate_m();
@@ -129,6 +143,14 @@ public class GlobalSearch {
         sortAnalysisBySecondValue();
 
         return analysis.get(0);
+    }
+
+    private void saveStepsOfAlgorithm(ArrayList<Double> result, int numberOfVariable) {
+        for(int p = 0; p < stepsOfOneDimensionalAlgorithm.size(); p++) {
+            result.set(numberOfVariable, stepsOfOneDimensionalAlgorithm.get(p).getKey());
+            stepsOfAlgorithm.add(new ArrayList<Double>(result));
+            stepsOfAlgorithm.get(stepsOfAlgorithm.size() - 1).add(function.evaluate());
+        }
     }
 
     public ArrayList<ArrayList<Double>> getStepsOfAlgorithm() { return stepsOfAlgorithm; }

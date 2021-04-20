@@ -308,7 +308,7 @@ public class Manipulator extends JPanel implements MouseListener{
                 }
             }
         }
-        return new GlobalSearch(function, boundA, boundB, EPSILON, R);
+        return new GlobalSearch(function, boundA, boundB, EPSILON, R, onlyHingesMoves);
     }
 
     private void stepsAnimation(final ArrayList<ArrayList<Double>> stepsOfAlgorithm,

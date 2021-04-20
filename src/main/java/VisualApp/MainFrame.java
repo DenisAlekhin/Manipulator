@@ -99,7 +99,7 @@ public class MainFrame extends JFrame{
         });
         btnGlbSearchSteps.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                manipulator.animatedSetToTarget(100, checkBoxOnlyHingesMoves.isSelected());
+                manipulator.animatedSetToTarget(150, checkBoxOnlyHingesMoves.isSelected());
             }
         });
     }
