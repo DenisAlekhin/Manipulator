@@ -69,40 +69,33 @@ public class GlobalSearch {
         stepsOfAlgorithm.add(new ArrayList<Double>(result));
         stepsOfAlgorithm.get(stepsOfAlgorithm.size() - 1).add(function.evaluate());
 
-        // forward
-        for(int n = 0; n < numOfIter; n++) {
-            for(int i = 0; i < countOfDimensions; i++) {
-                countOfCalc.set(i, countOfCalc.get(i) + 1);
-                result.set(i, findOneDimensionalMinimum(function, "x" + i, i).getKey());
-                function.setVariable("x" + i, result.get(i));
-                saveStepsOfAlgorithm(result, i);
-                if(i != 0 && countOfCalc.get(i) < 2) {
-                    for(int k = i - 1; k > 0; k--) {
-                        countOfCalc.set(k, 0);
-                    }
-                    i = -1;
-                }
-            }
-        }
-
-
-        // backward
-        /*
-        for(int n = 0; n < numOfIter; n++) {
+        int  p = 0;
+        double previousRes = -1;
+        do {
             for(int i = countOfDimensions - 1; i >= 0; i--) {
                 countOfCalc.set(i, countOfCalc.get(i) + 1);
                 result.set(i, findOneDimensionalMinimum(function, "x" + i, i).getKey());
                 function.setVariable("x" + i, result.get(i));
                 saveStepsOfAlgorithm(result, i);
-                if(i != countOfDimensions - 1 && countOfCalc.get(i) < 2) {
+                if(i != 0 && countOfCalc.get(i) < 2) {
                     for(int k = i + 1; k < countOfDimensions - 1; k++) {
                         countOfCalc.set(k, 0);
                     }
-                    i = countOfDimensions;
+                    i = -1;
                 }
             }
-        }*/
-
+            if(previousRes != -1 && previousRes == function.evaluate()) {
+                for(int i = 0; i < result.size(); i++) {
+                    result.set(i, result.get(i) + 0.1);
+                    function.setVariable("x" + i, result.get(i));
+                }
+            }
+            previousRes = function.evaluate();
+            p++;
+        } while (function.evaluate() > 0.5 && p < 1000);
+        if(p == 1000) {
+            System.out.println("Unreachable:");
+        }
         for(int j = 0; j < countOfDimensions; j++) {
             function.setVariable("x" + j, result.get(j));
         }
@@ -143,6 +136,15 @@ public class GlobalSearch {
         sortAnalysisBySecondValue();
 
         return analysis.get(0);
+    }
+
+    private int findInterval(ArrayList<Double> analysis, double  value) {
+        for(int i = 0; i < analysis.size(); i++) {
+            if(value < analysis.get(i)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private void saveStepsOfAlgorithm(ArrayList<Double> result, int numberOfVariable) {
