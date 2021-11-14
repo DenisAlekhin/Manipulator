@@ -16,6 +16,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -24,7 +25,8 @@ import java.util.Vector;
 public class Manipulator extends JPanel implements MouseListener{
     final double R = 1.5;
     final double EPSILON = 0.01;
-    private Vector<Element> mechanism = new Vector();
+    private ArrayList<Element> mechanism = new ArrayList();
+    private ArrayList<Point2D> obstacles = new ArrayList();
     private AffineTransform Default;
     private AffineTransform startPoint;
     Point2D selectedPoint;
@@ -33,6 +35,8 @@ public class Manipulator extends JPanel implements MouseListener{
     private Vector<Element> targetConstruction = new Vector();
     int selectedHinge = -1;
     Timer timer;
+    int frameStartX = 3;
+    int frameStartY = 26;
 
     {
         targetConstruction.add(new Hinge(0, -1));
@@ -52,21 +56,21 @@ public class Manipulator extends JPanel implements MouseListener{
         if(mechanism.size() == 0) {
             mechanism.add(new Hinge(value, connection));
         } else {
-             if(connection == -1)
-             {
-                 if(mechanism.get(mechanism.size() - 1) instanceof Rod) {
-                     mechanism.add(new Hinge(value, connection));
-                 } else {
-                     mechanism.add(new Rod(value, connection));
-                 }
-             } else {
-                 connection += 1;
-                 if(mechanism.get(connection) instanceof Rod) {
-                     mechanism.add(new Hinge(value, connection));
-                 } else {
-                     mechanism.add(new Rod(value, connection));
-                 }
-             }
+            if(connection == -1)
+            {
+                if(mechanism.get(mechanism.size() - 1) instanceof Rod) {
+                    mechanism.add(new Hinge(value, connection));
+                } else {
+                    mechanism.add(new Rod(value, connection));
+                }
+            } else {
+                connection += 1;
+                if(mechanism.get(connection) instanceof Rod) {
+                    mechanism.add(new Hinge(value, connection));
+                } else {
+                    mechanism.add(new Rod(value, connection));
+                }
+            }
         }
     }
     // automatically selects the type of the next element
@@ -88,6 +92,7 @@ public class Manipulator extends JPanel implements MouseListener{
         Graphics2D g2d = (Graphics2D)g;
         Default = g2d.getTransform();
         paintMechanism(g2d);
+        paintObstacles(g2d);
     }
 
     private void paintBase(Graphics2D g2d) {
@@ -101,8 +106,7 @@ public class Manipulator extends JPanel implements MouseListener{
 
     private void checkSelectedHinge(int index, Graphics2D g2d) {
         if (selectedPoint != null) {
-            AffineTransform at = g2d.getTransform();
-            currentPoint = at.transform(new Point.Double(0, 0), new Point2D.Double());
+            currentPoint = g2d.getTransform().transform(new Point.Double(0, 0), new Point2D.Double());
             Ellipse2D ellipse = new Ellipse2D.Double(currentPoint.getX() - 10, currentPoint.getY() - 10, 20, 20);
             if (ellipse.contains(selectedPoint.getX(), selectedPoint.getY())) {
                 selectedHinge = index;
@@ -158,6 +162,17 @@ public class Manipulator extends JPanel implements MouseListener{
         g2d.setColor(Color.black);
     }
 
+    private void paintObstacles(Graphics2D g2d) {
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setTransform(Default);
+        g2d.setColor(Color.RED);
+        for(int i = 0; i < obstacles.size();i++) {
+            g2d.fillOval((int)obstacles.get(i).getX()- 25 - frameStartX,
+                    (int)obstacles.get(i).getY() - 25 - frameStartY,
+                    50,50);
+        }
+    }
 
     private void paintMechanism(Graphics2D g2d) {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -196,7 +211,7 @@ public class Manipulator extends JPanel implements MouseListener{
         if(onlyHingesMoves) {
             String x1 = "(75+125*" + ((Rod)mechanism.get(1)).getCompression() +
                     "cos(x0)+125*" + ((Rod)mechanism.get(3)).getCompression() + "cos(x0+x1))";
-            String y1 = "(140+125*" + ((Rod)mechanism.get(1)).getCompression() +
+            String y1 = "(130+125*" + ((Rod)mechanism.get(1)).getCompression() +
                     "sin(x0)+125*" + ((Rod)mechanism.get(3)).getCompression() + "sin(x0+x1))";
             String func = "sqrt((" + x2 + "-" + x1 + ")*" + "(" + x2 + "-" + x1 + ")+"
                     + "(" + y2 + "-" + y1 + ")*" + "(" + y2 + "-" + y1 + "))";
@@ -205,7 +220,7 @@ public class Manipulator extends JPanel implements MouseListener{
                     .build();
         } else {
             String x1 = "(75+125*x1*cos(x0)+125*x3*cos(x0+x2))";
-            String y1 = "(140+125*x1*sin(x0)+125*x3*sin(x0+x2))";
+            String y1 = "(130+125*x1*sin(x0)+125*x3*sin(x0+x2))";
             String func = "sqrt((" + x2 + "-" + x1 + ")*" + "(" + x2 + "-" + x1 + ")+"
                     + "(" + y2 + "-" + y1 + ")*" + "(" + y2 + "-" + y1 + "))";
             return new ExpressionBuilder(func)
@@ -233,10 +248,20 @@ public class Manipulator extends JPanel implements MouseListener{
             }
         }
     }
+    private boolean resultIsReachable(ArrayList<Double> result) {
+        if(result.get(0) == -100) {
+            return false;
+        }
+        return true;
+    }
+
 
     public void setToTarget(boolean onlyHingesMoves) {
         GlobalSearch globalSearch = setUpGlobalSearch(onlyHingesMoves);
-        ArrayList<Double> result = globalSearch.findMinimum();
+        ArrayList<Double> result = globalSearch.findMinimum(obstacles);
+        if(!resultIsReachable(result)) {
+            return;
+        }
         moveManipulator(result, onlyHingesMoves);
         setTwoLastElements();
         repaint();
@@ -245,7 +270,8 @@ public class Manipulator extends JPanel implements MouseListener{
 
     public void animatedSetToTarget(int timeout, boolean onlyHingesMoves) {
         GlobalSearch globalSearch = setUpGlobalSearch(onlyHingesMoves);
-        globalSearch.findMinimum();
+        globalSearch.findMinimum(obstacles);
+
         ArrayList<ArrayList<Double>> stepsOfAlgorithm = globalSearch.getStepsOfAlgorithm();
         stepsAnimation(stepsOfAlgorithm, timeout, onlyHingesMoves);
 
@@ -331,6 +357,11 @@ public class Manipulator extends JPanel implements MouseListener{
         timer.start();
     }
 
+    public void addObstacle(Point2D position) {
+        obstacles.add(position);
+        repaint();
+    }
+
     public void mouseClicked(MouseEvent e) {}
     public void mouseExited(MouseEvent e) {}
     public void mouseReleased(MouseEvent e) {}
@@ -339,13 +370,13 @@ public class Manipulator extends JPanel implements MouseListener{
         if(selectedHinge == -1) {
             selectedPoint = e.getPoint();
             selectedPoint.setLocation(
-                    selectedPoint.getX() - 8,
-                    selectedPoint.getY() - 31);
+                    selectedPoint.getX() - frameStartX,
+                    selectedPoint.getY() - frameStartY);
         } else {
             targetPoint = e.getPoint();
             targetPoint.setLocation(
-                    targetPoint.getX() - 8,
-                    targetPoint.getY() - 31);
+                    targetPoint.getX() - frameStartX,
+                    targetPoint.getY() - frameStartY);
         }
         repaint();
     }

@@ -3,9 +3,9 @@ package VisualApp.GlobalSearch;
 import javafx.util.Pair;
 import net.objecthunter.exp4j.Expression;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.util.*;
 
 public class GlobalSearch {
     private Expression function;
@@ -17,6 +17,9 @@ public class GlobalSearch {
     private ArrayList<Pair<Double, Double>> analysis;
     private ArrayList<Pair<Double, Double>> stepsOfOneDimensionalAlgorithm;
     private ArrayList<ArrayList<Double>> stepsOfAlgorithm;
+    SortedSet<Integer> goodPoints = new TreeSet<Integer>();
+    int scrCoordManipStartX = 78;
+    int scrCoordManipStartY = 156;
 
     public GlobalSearch(Expression function, ArrayList<Double> a, ArrayList<Double> b,
                         double epsilon, double r, boolean onlyHingesMoves) {
@@ -51,7 +54,7 @@ public class GlobalSearch {
         stepsOfAlgorithm = new ArrayList<ArrayList<Double>>();
     }
 
-    public ArrayList<Double> findMinimum(){
+    public ArrayList<Double> findMinimum(ArrayList<Point2D> obstacles){
         ArrayList<Double> result = new ArrayList<Double>();
         int countOfDimensions = function.getVariableNames().size();
         ArrayList<Integer> countOfCalc= new ArrayList<Integer>();
@@ -74,7 +77,7 @@ public class GlobalSearch {
         do {
             for(int i = countOfDimensions - 1; i >= 0; i--) {
                 countOfCalc.set(i, countOfCalc.get(i) + 1);
-                result.set(i, findOneDimensionalMinimum(function, "x" + i, i).getKey());
+                result.set(i, findOneDimensionalMinimum(function, "x" + i, i, result, obstacles).getKey());
                 function.setVariable("x" + i, result.get(i));
                 saveStepsOfAlgorithm(result, i);
                 if(i != 0 && countOfCalc.get(i) < 2) {
@@ -94,7 +97,11 @@ public class GlobalSearch {
             p++;
         } while (function.evaluate() > 0.5 && p < 1000);
         if(p == 1000) {
-            System.out.println("Unreachable:");
+            System.out.println("Unreachable");
+            for(int j = 0; j < countOfDimensions; j++) {
+                result.set(j, -100.0);
+            }
+            return result;
         }
         for(int j = 0; j < countOfDimensions; j++) {
             function.setVariable("x" + j, result.get(j));
@@ -103,7 +110,9 @@ public class GlobalSearch {
         return result;
     }
 
-    private Pair<Double, Double> findOneDimensionalMinimum(Expression function, String variable, int numberOfVariable){
+    private Pair<Double, Double> findOneDimensionalMinimum(
+            Expression function, String variable, int numberOfVariable,
+            ArrayList<Double> points, ArrayList<Point2D> obstacles){
         analysis.clear();
         stepsOfOneDimensionalAlgorithm.clear();
         analysis.add(new Pair<Double, Double>(a.get(numberOfVariable),
@@ -114,6 +123,8 @@ public class GlobalSearch {
         int t = 0;
         do {
             sortAnalysisByFirstValue();
+            goodPoints.clear();
+            goodPoints = limitationsCheck(points, obstacles);
             try {
                 calculate_m();
             } catch (Exception e) {
@@ -145,6 +156,77 @@ public class GlobalSearch {
             }
         }
         return -1;
+    }
+
+    private SortedSet<Integer> limitationsCheck(ArrayList<Double> points, ArrayList<Point2D> obstacles) {
+        ArrayList<Double> pointsCopy = new ArrayList<Double>(points);
+        if(pointsCopy.size() == 2) {
+            pointsCopy.add(1, 1.0);
+            pointsCopy.add(3, 1.0);
+        }
+
+
+        SortedSet<Integer> goodPoints = new TreeSet<Integer>();
+        pointsCopy.add(analysis.get(0).getKey());
+        for(int i = 0; i < analysis.size(); i++) {
+            pointsCopy.set(3, analysis.get(i).getKey());
+            if(firstRodCorrespondLimitations(pointsCopy, obstacles) &&
+            secondRodCorrespondLimitations(pointsCopy, obstacles) &&
+            thirdRodCorrespondLimitations(pointsCopy, obstacles)) {
+                goodPoints.add(i);
+            }
+        }
+        return goodPoints;
+    }
+
+    private boolean firstRodCorrespondLimitations(ArrayList<Double> points, ArrayList<Point2D> obstacles) {
+        Line2D firstRod = new Line2D.Double(
+                new Point2D.Double(scrCoordManipStartX,scrCoordManipStartY),
+                new Point2D.Double(scrCoordManipStartX+125*points.get(1)*Math.cos(points.get(0)),
+                        scrCoordManipStartY+125*points.get(1)*Math.sin(points.get(0))));
+
+        for(int i = 0; i < obstacles.size(); i++) {
+            if(firstRod.ptSegDist(obstacles.get(i)) - 25 < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean secondRodCorrespondLimitations(ArrayList<Double> points, ArrayList<Point2D> obstacles) {
+        Line2D secondRod = new Line2D.Double(
+                new Point2D.Double(scrCoordManipStartX+125*points.get(1)*Math.cos(points.get(0)),
+                        scrCoordManipStartY+125*points.get(1)*Math.sin(points.get(0))),
+                new Point2D.Double(scrCoordManipStartX+125*points.get(1)*Math.cos(points.get(0))+
+                                125*points.get(3)*Math.cos(points.get(0)+points.get(2)),
+                        scrCoordManipStartY+125*points.get(1)*Math.sin(points.get(0))+
+                                125*points.get(3)*Math.sin(points.get(0)+points.get(2))));
+
+        for(int i = 0; i < obstacles.size(); i++) {
+            if(secondRod.ptSegDist(obstacles.get(i)) - 25 < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean thirdRodCorrespondLimitations(ArrayList<Double> points, ArrayList<Point2D> obstacles) {
+        /*Line2D thirdRod = new Line2D.Double(
+                new Point2D.Double(75+125*points.get(1)*Math.cos(points.get(0))+
+                                125*points.get(3)*Math.cos(points.get(0)+points.get(2)),
+                        140+125*points.get(1)*Math.sin(points.get(0))+
+                                125*points.get(3)*Math.sin(points.get(0)+points.get(2))),
+                new Point2D.Double(75+125*points.get(1)*Math.cos(points.get(0))+
+                                125*points.get(3)*Math.cos(points.get(0)+points.get(2)),
+                        140+125*points.get(1)*Math.sin(points.get(0))+
+                                125*points.get(3)*Math.sin(points.get(0)+points.get(2))));
+
+        for(int i = 0; i < obstacles.size(); i++) {
+            if(thirdRod.ptSegDist(obstacles.get(i)) - 25 < 0) {
+                return false;
+            }
+        }*/
+        return true;
     }
 
     private void saveStepsOfAlgorithm(ArrayList<Double> result, int numberOfVariable) {
@@ -193,11 +275,13 @@ public class GlobalSearch {
 
     private void calculate_m() throws Exception{
         // searching the maximum M value
-        double M = calculateM(1);
+        double M = calculateM(1);                        //// FIX FIX FIX FIX FIX
         for (int i = 2; i < analysis.size(); i++) {
-            double tempM = calculateM(i);
-            if (tempM > M) {
-                M = tempM;
+            if(goodPoints.contains(i)) {
+                double tempM = calculateM(i);
+                if (tempM > M) {
+                    M = tempM;
+                }
             }
         }
 
@@ -226,10 +310,12 @@ public class GlobalSearch {
         int indexR = 1;
         for (int i = 2; i < analysis.size(); i++)
         {
-            double tempR = calculateR(i);
-            if (tempR > R) {
-                R = tempR;
-                indexR = i;
+            if(goodPoints.contains(i)) {
+                double tempR = calculateR(i);
+                if (tempR > R) {
+                    R = tempR;
+                    indexR = i;
+                }
             }
         }
         return indexR;
