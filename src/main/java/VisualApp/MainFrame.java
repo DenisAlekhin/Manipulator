@@ -135,7 +135,6 @@ public class MainFrame extends JFrame{
         //moveToCenterScreen(frame);
         frame.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-                System.out.println(e.getPoint().x + "," +  e.getPoint().y);
                 if(buttonClicked) {
                     manipulator.addObstacle(e.getPoint());
                 }

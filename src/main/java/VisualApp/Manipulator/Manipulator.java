@@ -42,6 +42,27 @@ public class Manipulator extends JPanel implements MouseListener{
         targetConstruction.add(new Hinge(0, -1));
         targetConstruction.add(new Rod(1, -1));
     }
+    /*
+        0       1       2       3       4       5
+        Hinge   Rod     Hinge   Rod     Hinge   Rod
+     */
+
+    /*public void distThirdRod(){
+        Line2D thirdRod = new Line2D.Double(
+                new Point2D.Double(75+125*((Rod)mechanism.get(1)).getCompression()*Math.cos(((Hinge)mechanism.get(0)).getAngle())+
+                        125*((Rod)mechanism.get(3)).getCompression()*Math.cos(((Hinge)mechanism.get(0)).getAngle()+((Hinge)mechanism.get(2)).getAngle()),
+                        130+125*((Rod)mechanism.get(1)).getCompression()*Math.sin(((Hinge)mechanism.get(0)).getAngle())+
+                                125*((Rod)mechanism.get(3)).getCompression()*Math.sin(((Hinge)mechanism.get(0)).getAngle()+((Hinge)mechanism.get(2)).getAngle())),
+                new Point2D.Double(75+125*((Rod)mechanism.get(1)).getCompression()*Math.cos(((Hinge)mechanism.get(0)).getAngle())+
+                125*((Rod)mechanism.get(3)).getCompression()*Math.cos(((Hinge)mechanism.get(0)).getAngle()+((Hinge)mechanism.get(2)).getAngle())+
+                        125*((Rod)mechanism.get(3)).getCompression()*Math.cos(((Hinge)mechanism.get(0)).getAngle()+((Hinge)mechanism.get(2)).getAngle()+((Hinge)mechanism.get(4)).getAngle()),
+                130+125*((Rod)mechanism.get(1)).getCompression()*Math.sin(((Hinge)mechanism.get(0)).getAngle())+
+                        125*((Rod)mechanism.get(3)).getCompression()*Math.sin(((Hinge)mechanism.get(0)).getAngle()+((Hinge)mechanism.get(2)).getAngle())+
+                        125*((Rod)mechanism.get(3)).getCompression()*Math.sin(((Hinge)mechanism.get(0)).getAngle()+((Hinge)mechanism.get(2)).getAngle()+((Hinge)mechanism.get(4)).getAngle())));
+        for(int i = 0; i < obstacles.size(); i++) {
+            System.out.println(thirdRod.ptSegDist(obstacles.get(i)) - 25);
+        }
+    }*/
 
 
     // automatically selects the type of the next element
@@ -205,6 +226,7 @@ public class Manipulator extends JPanel implements MouseListener{
         selectedHinge = -1;
         selectedPoint = null;
     }
+
     private Expression buildExpression(boolean onlyHingesMoves) {
         String x2 = Double.toString(targetPoint.getX());
         String y2 = Double.toString(targetPoint.getY());
@@ -259,9 +281,6 @@ public class Manipulator extends JPanel implements MouseListener{
     public void setToTarget(boolean onlyHingesMoves) {
         GlobalSearch globalSearch = setUpGlobalSearch(onlyHingesMoves);
         ArrayList<Double> result = globalSearch.findMinimum(obstacles);
-        if(!resultIsReachable(result)) {
-            return;
-        }
         moveManipulator(result, onlyHingesMoves);
         setTwoLastElements();
         repaint();
