@@ -101,8 +101,8 @@ public class GlobalSearch {
             }
             previousRes = function.evaluate();*/
             p++;
-        } while (function.evaluate() > 0.5 && p < 100);
-        if(p == 100) {
+        } while (function.evaluate() > 0.5 && p < 500);
+        if(p == 500) {
             System.out.println("Точка недостижима");
         }
         for(int j = 0; j < countOfDimensions; j++) {
@@ -250,6 +250,7 @@ public class GlobalSearch {
     }
 
     private double calculateIndexR(int index) {
+        //double u = this.u.get(4); // ЭТО НЕ ПРАВИЛЬНО -> ДОЛЖНО БЫТЬ:
         double u = this.u.get(calculateVForPoint(index));
         if(calculateVForPoint(index - 1) == calculateVForPoint(index)) {
             return calculateIndexRFormula1(index, u);
@@ -295,7 +296,7 @@ public class GlobalSearch {
     }
 
     private void calculate_z(ArrayList<Double> points, int numberOfVariable, ArrayList<Point2D> obstacles) {
-        ArrayList<Double> Zv = new ArrayList<Double>();
+        /*ArrayList<Double> Zv = new ArrayList<Double>();
         ArrayList<Integer> Iv = new ArrayList<Integer>(I.get(4));
         for(int i = 0; i < 5; i++) {
             double minZ = calcGv(analysis.get(Iv.get(0)).getKey(), i, points, numberOfVariable, obstacles);
@@ -305,6 +306,20 @@ public class GlobalSearch {
                         minZ);
             }
             Zv.add(minZ);
+        }
+        z = Collections.min(Zv);*/
+        ArrayList<Double> Zv = new ArrayList<Double>();
+        for(int i = 0; i < 5; i++) {
+            ArrayList<Integer> Iv = new ArrayList<Integer>(I.get(i));
+            if(Iv.size() != 0) {
+                double minZ = analysis.get(Iv.get(0)).getValue();
+                for(int j = 1; j < Iv.size(); j++) {
+                    minZ = Math.min(analysis.get(Iv.get(0)).getValue(), minZ);
+                }
+                Zv.add(minZ);
+            } else {
+                Zv.add(0.0);
+            }
         }
         z = Collections.min(Zv);
     }
@@ -554,9 +569,9 @@ public class GlobalSearch {
             }
         }
         // удалить чтобы было как по книжке(не работат если убрать)
-        for(int i = 0; i < 5; i++) {
+        /*for(int i = 0; i < 5; i++) {
             u.set(i, u.get(4));
-        }
+        }*/
     }
 
     public double calcGv(double variable, int _v, ArrayList<Double> points,
