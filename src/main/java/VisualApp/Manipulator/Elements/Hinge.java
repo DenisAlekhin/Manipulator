@@ -7,7 +7,7 @@ public class Hinge extends Element{
         super(connection);
         if(angle < -359 || angle > 359) {
             try {
-                throw new Exception("Angle is out of range [-359,359]!");
+                throw new Exception("Angle is out of range [-359,359]: " + angle);
             } catch (Exception e) {
                 e.printStackTrace();
             }

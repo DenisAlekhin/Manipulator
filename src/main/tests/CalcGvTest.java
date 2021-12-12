@@ -8,7 +8,7 @@ import org.junit.Test;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
-public class GlobalSearchTest {
+public class CalcGvTest {
     @Test
     public void calcGvWithVEqZeroTest(){
         ArrayList<Double> points = new ArrayList<Double>();
