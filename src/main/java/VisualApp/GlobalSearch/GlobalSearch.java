@@ -79,21 +79,21 @@ public class GlobalSearch {
         stepsOfAlgorithm.get(stepsOfAlgorithm.size() - 1).add(function.evaluate());
 
         int  p = 0;
-        //double previousRes = -1;
+        double previousRes = -1;
         do {
             for(int i = countOfDimensions - 1; i >= 0; i--) {
                 countOfCalc.set(i, countOfCalc.get(i) + 1);
                 result.set(i, findOneDimensionalMinimumWithLimitations("x" + i, i, result, obstacles).getKey());
                 function.setVariable("x" + i, result.get(i));
-                saveStepsOfAlgorithm(result, i);
+                //saveStepsOfAlgorithm(result, i);
                 if(i != 0 && countOfCalc.get(i) < 2) {
                     for(int k = i + 1; k < countOfDimensions - 1; k++) {
                         countOfCalc.set(k, 0);
                     }
                     i = -1;
                 }
-            }/*
-            if(previousRes != -1 && previousRes == function.evaluate()) {
+            }
+            /*if(previousRes != -1 && previousRes == function.evaluate()) {
                 for(int i = 0; i < result.size(); i++) {
                     result.set(i, result.get(i) + 0.1);
                     function.setVariable("x" + i, result.get(i));
@@ -101,8 +101,8 @@ public class GlobalSearch {
             }
             previousRes = function.evaluate();*/
             p++;
-        } while (function.evaluate() > 0.5 && p < 5);
-        if(p == 5) {
+        } while (function.evaluate() > 0.5 && p < 100);
+        if(p == 100) {
             System.out.println("Точка недостижима");
         }
         for(int j = 0; j < countOfDimensions; j++) {
@@ -173,7 +173,7 @@ public class GlobalSearch {
                 break;
             }
             calculate_z(points, numberOfVariable, obstacles);
-            t = calculateMaxIndexR(points, numberOfVariable, obstacles);
+            t = calculateMaxIndexR();
 
             double newStudyX = calculateNewStudyPoint(t, points, numberOfVariable, obstacles);
             if (newStudyX < analysis.get(t - 1).getKey() || newStudyX > analysis.get(t).getKey()) {
@@ -197,18 +197,20 @@ public class GlobalSearch {
     private double calculateNewStudyPoint(int t,  ArrayList<Double> points,
                                           int numberOfVariable, ArrayList<Point2D> obstacles) {
         double Xt = analysis.get(t).getKey();
+        // j = t - 1
         double Xj = analysis.get(t - 1).getKey();
         double Zt = calcGv(analysis.get(t).getKey(), calculateVForPoint(t), points, numberOfVariable, obstacles);
+        // j = t - 1
         double Zj = calcGv(analysis.get(t - 1).getKey(), calculateVForPoint(t - 1), points, numberOfVariable, obstacles);
 
         double u = this.u.get(calculateVForPoint(t));
-        if(calculateVForPoint(t - 1) != calculateVForPoint(t)) {
-            return (Xt + Xj) / 2;
-        } else {
+        //if(calculateVForPoint(t - 1) != calculateVForPoint(t)) {
+            return (Xt + Xj) / 2 - (Zt - Zt) / (2 * u * r);
+        /*} else {
             return (Xt + Xj) / 2 -
                     sgn((Zt - Zj)) * Math.pow((Zt - Zj), 2)  /
                             (2 * r * Math.pow(u, 2));
-        }
+        }*/
     }
 
     private int sgn(double x) {
@@ -221,13 +223,11 @@ public class GlobalSearch {
         }
     }
 
-    private int calculateMaxIndexR(ArrayList<Double> points,
-                                   int numberOfVariable,
-                                   ArrayList<Point2D> obstacles) {
+    private int calculateMaxIndexR() {
         ArrayList<Double> R = new ArrayList<Double>(analysis.size());
 
         for(int i = 1; i < analysis.size(); i++) {
-            R.add(calculateIndexR(i, points, numberOfVariable, obstacles));
+            R.add(calculateIndexR(i));
         }
         double maxR = Collections.max(R);
         int t = R.lastIndexOf(maxR);
@@ -235,44 +235,49 @@ public class GlobalSearch {
         return t + 1;
     }
 
-    private double calculateIndexR(int index, ArrayList<Double> points,
-                                   int numberOfVariable, ArrayList<Point2D> obstacles) {
+    private double calculateIndexR(int index) {
         double u = this.u.get(calculateVForPoint(index));
-        if(calculateVForPoint(index - 1) == calculateVForPoint(index)) {
-            return calculateIndexRFormula1(index, u, calculateVForPoint(index), points, numberOfVariable, obstacles);
-        } else if(calculateVForPoint(index - 1) > calculateVForPoint(index)) {
-            return calculateIndexRFormula2(index, u, calculateVForPoint(index), points, numberOfVariable, obstacles);
+        //if(calculateVForPoint(index - 1) == calculateVForPoint(index)) {
+            return calculateIndexRFormula1(index, u);
+        /*} else if(calculateVForPoint(index - 1) > calculateVForPoint(index)) {
+            return calculateIndexRFormula2(index, u);
         } else {
-            return calculateIndexRFormula3(index, u, calculateVForPoint(index), points, numberOfVariable, obstacles);
-        }
+            return calculateIndexRFormula3(index, u);
+        }*/
     }
 
-    private double calculateIndexRFormula1(int index, double u, int v, ArrayList<Double> points,
-                                           int numberOfVariable, ArrayList<Point2D> obstacles) {
+    private double calculateIndexRFormula1(int index, double u) {
         double deltaI = analysis.get(index).getKey() - analysis.get(index - 1).getKey();
-        double Zi = calcGv(analysis.get(index).getKey(), v,points, numberOfVariable, obstacles);
-        double Zj = calcGv(analysis.get(index - 1).getKey(), v,points, numberOfVariable, obstacles);
+        double Zi = analysis.get(index).getValue();
+        // j = i - 1
+        double Zj = analysis.get(index - 1).getValue();
 
-        return deltaI + Math.pow(Zi - Zj, 2) / ((Math.pow(r * u,2) * deltaI)) -
-                (2 * (Zi + Zj - 2 * z)) / (r * u);
+
+        return u * r * deltaI + Math.pow(Zi - Zj, 2) / (u * r * deltaI) - 2 * (Zi + Zj);
+
+        /*return deltaI + Math.pow(Zi - Zj, 2) /
+                        (Math.pow(r * u, 2) * deltaI) -
+                (2 * (Zi + Zj - 2 * z)) /
+                        (r * u);*/
     }
 
-    private double calculateIndexRFormula2(int index, double u, int v, ArrayList<Double> points,
-                                           int numberOfVariable, ArrayList<Point2D> obstacles) {
+    private double calculateIndexRFormula2(int index, double u) {
         double deltaI = analysis.get(index).getKey() - analysis.get(index - 1).getKey();
-        double Zj = calcGv(analysis.get(index - 1).getKey(), v, points, numberOfVariable, obstacles);
+        // j = i - 1
+        double Zj = analysis.get(index - 1).getValue();
 
         return 2 * deltaI -
-                (4 * (Zj - z)) / (r * u);
+                4 * (Zj - z) /
+                        (r * u);
     }
 
-    private double calculateIndexRFormula3(int index, double u, int v, ArrayList<Double> points,
-                                           int numberOfVariable, ArrayList<Point2D> obstacles) {
+    private double calculateIndexRFormula3(int index, double u) {
         double deltaI = analysis.get(index).getKey() - analysis.get(index - 1).getKey();
-        double Zi = calcGv(analysis.get(index).getKey(), v, points, numberOfVariable, obstacles);
+        double Zi = analysis.get(index).getValue();
 
         return 2 * deltaI -
-                (4 * (Zi - z)) / (r * u);
+                4 * (Zi - z) /
+                        (r * u);
     }
 
     private void calculate_z(ArrayList<Double> points, int numberOfVariable, ArrayList<Point2D> obstacles) {
@@ -496,7 +501,7 @@ public class GlobalSearch {
 
     private void calculate_u(ArrayList<Double> points,
                              int numberOfVariable, ArrayList<Point2D> obstacles) throws Exception{
-        for(int i = 0; i < 5; i++) {
+        /*for(int i = 0; i < 5; i++) {
             ArrayList<Integer> Iv = new ArrayList<Integer>(I.get(i));
             if(Iv.size() >= 2) {
                 double temp_u = calculateTemp_u(1, 0, i, Iv, points, numberOfVariable, obstacles);
@@ -514,7 +519,24 @@ public class GlobalSearch {
             } else {
                 u.set(i, 1.0);
             }
+        }*/
+        double M = calculateM(1);
+        for (int i = 2; i < analysis.size(); i++) {
+            double tempM = calculateM(i);
+            if (tempM > M) {
+                M = tempM;
+            }
         }
+
+        // define m value
+        for(int i = 0; i < 5; i++) {
+            if (M > 0)
+                this.u.set(i, r * M);
+            else if (M == 0) this.u.set(i, 1.0);
+            else throw new Exception("Error: M < 0");
+        }
+
+
     }
 
     public double calcGv(double variable, int _v, ArrayList<Double> points,
@@ -545,9 +567,10 @@ public class GlobalSearch {
 
         double Xi = analysis.get(Iv.get(indexI)).getKey();
         double Xj = analysis.get(Iv.get(indexJ)).getKey();
-        double Zi = calcGv(analysis.get(Iv.get(indexI)).getKey(), _v, points, numberOfVariable, obstacles);
-        double Zj = calcGv(analysis.get(Iv.get(indexJ)).getKey(), _v, points, numberOfVariable, obstacles);
-
+        //double Zi = calcGv(analysis.get(Iv.get(indexI)).getKey(), _v, points, numberOfVariable, obstacles);
+        //double Zj = calcGv(analysis.get(Iv.get(indexJ)).getKey(), _v, points, numberOfVariable, obstacles);
+        double Zi = analysis.get(Iv.get(indexI)).getValue();
+        double Zj = analysis.get(Iv.get(indexJ)).getValue();
 
         return Math.abs(Zi - Zj) / (Xi - Xj);
     }
@@ -566,17 +589,15 @@ public class GlobalSearch {
     }
 
     int calculateMaxR() {
-        double R = calculateR(1);
-        int indexR = 1;
-        for (int i = 2; i < analysis.size(); i++)
-        {
-            double tempR = calculateR(i);
-            if (tempR > R) {
-                R = tempR;
-                indexR = i;
-            }
+        ArrayList<Double> R = new ArrayList<Double>(analysis.size());
+
+        for(int i = 1; i < analysis.size(); i++) {
+            R.add(calculateR(i));
         }
-        return indexR;
+        double maxR = Collections.max(R);
+        int t = R.lastIndexOf(maxR);
+
+        return t + 1;
     }
 
     ArrayList<Double> copyPoints(ArrayList<Double> points) {
