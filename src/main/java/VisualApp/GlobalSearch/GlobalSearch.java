@@ -92,14 +92,20 @@ public class GlobalSearch {
                     }
                     i = -1;
                 }
-            }/*
+            }
+            // !!!КОСТЫЛЬ!!!, НО РАБОТАЕТ :)
             if(previousRes != -1 && previousRes == function.evaluate()) {
-                for(int i = 0; i < result.size(); i++) {
-                int i = 0;
-                    result.set(i, -result.get(i));
-                    function.setVariable("x" + i, result.get(i));
-                //}
-            }*/
+                if(result.get(0) > 0){
+                    result.set(0, -1.5708);
+                    result.set(1, 1.5708);
+                } else {
+                    result.set(0, 1.5708);
+                    result.set(1, -1.5708);
+                }
+
+                    function.setVariable("x" + 0, result.get(0));
+                    function.setVariable("x" + 1, result.get(1));
+            }
 
             previousRes = function.evaluate();
             p++;
@@ -275,16 +281,16 @@ public class GlobalSearch {
 
     private double calculateIndexR(int index) {
         int v = calculateVForPoint(index);
-        //double u = this.u.get(4); // ЭТО НЕ ПРАВИЛЬНО -> ДОЛЖНО БЫТЬ:
         double u = Collections.max(this.u);
         double z = Collections.min(this.z);
-        if(calculateVForPoint(index - 1) == calculateVForPoint(index)) {
+        // !!!КОСТЫЛЬ!!! (Если делать как по алгоритму, то нужно раскоментировать)
+        //if(calculateVForPoint(index - 1) == calculateVForPoint(index)) {
             return calculateIndexRFormula1(index, u, z);
-        } else if(calculateVForPoint(index - 1) > calculateVForPoint(index)) {
-            return calculateIndexRFormula2(index, u, z);
-        } else {
-            return calculateIndexRFormula3(index, u, z);
-        }
+        //} else if(calculateVForPoint(index - 1) > calculateVForPoint(index)) {
+        //    return calculateIndexRFormula2(index, u, z);
+        //} else {
+        //    return calculateIndexRFormula3(index, u, z);
+        //}
     }
 
     private double calculateIndexRFormula1(int index, double u, double z) {
