@@ -22,6 +22,11 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import static VisualApp.Utils.StringConstants.FRAME_START_X;
+import static VisualApp.Utils.StringConstants.FRAME_START_Y;
+import static VisualApp.Utils.StringConstants.MANIP_START_X;
+import static VisualApp.Utils.StringConstants.MANIP_START_Y;
+
 public class Manipulator extends JPanel implements MouseListener{
     final double R = 1.5;
     final double EPSILON = 0.01;
@@ -35,8 +40,6 @@ public class Manipulator extends JPanel implements MouseListener{
     private Vector<Element> targetConstruction = new Vector();
     int selectedHinge = -1;
     Timer timer;
-    int frameStartX = 3;
-    int frameStartY = 26;
 
     {
         targetConstruction.add(new Hinge(0, -1));
@@ -189,8 +192,8 @@ public class Manipulator extends JPanel implements MouseListener{
         g2d.setTransform(Default);
         g2d.setColor(Color.RED);
         for(int i = 0; i < obstacles.size();i++) {
-            g2d.fillOval((int)obstacles.get(i).getX()- 25 - frameStartX,
-                    (int)obstacles.get(i).getY() - 25 - frameStartY,
+            g2d.fillOval((int)obstacles.get(i).getX()- 25 - FRAME_START_X,
+                    (int)obstacles.get(i).getY() - 25 - FRAME_START_Y,
                     50,50);
         }
     }
@@ -231,9 +234,9 @@ public class Manipulator extends JPanel implements MouseListener{
         String x2 = Double.toString(targetPoint.getX());
         String y2 = Double.toString(targetPoint.getY());
         if(onlyHingesMoves) {
-            String x1 = "(75+125*" + ((Rod)mechanism.get(1)).getCompression() +
+            String x1 = "(" + MANIP_START_X + "+125*" + ((Rod)mechanism.get(1)).getCompression() +
                     "cos(x0)+125*" + ((Rod)mechanism.get(3)).getCompression() + "cos(x0+x1))";
-            String y1 = "(130+125*" + ((Rod)mechanism.get(1)).getCompression() +
+            String y1 = "(" + MANIP_START_Y + "+125*" + ((Rod)mechanism.get(1)).getCompression() +
                     "sin(x0)+125*" + ((Rod)mechanism.get(3)).getCompression() + "sin(x0+x1))";
             String func = "sqrt((" + x2 + "-" + x1 + ")*" + "(" + x2 + "-" + x1 + ")+"
                     + "(" + y2 + "-" + y1 + ")*" + "(" + y2 + "-" + y1 + "))";
@@ -241,8 +244,8 @@ public class Manipulator extends JPanel implements MouseListener{
                     .variables("x0", "x1")
                     .build();
         } else {
-            String x1 = "(75+125*x1*cos(x0)+125*x3*cos(x0+x2))";
-            String y1 = "(130+125*x1*sin(x0)+125*x3*sin(x0+x2))";
+            String x1 = "(" + MANIP_START_X + "+125*x1*cos(x0)+125*x3*cos(x0+x2))";
+            String y1 = "(" + MANIP_START_Y + "+125*x1*sin(x0)+125*x3*sin(x0+x2))";
             String func = "sqrt((" + x2 + "-" + x1 + ")*" + "(" + x2 + "-" + x1 + ")+"
                     + "(" + y2 + "-" + y1 + ")*" + "(" + y2 + "-" + y1 + "))";
             return new ExpressionBuilder(func)
@@ -389,13 +392,13 @@ public class Manipulator extends JPanel implements MouseListener{
         if(selectedHinge == -1) {
             selectedPoint = e.getPoint();
             selectedPoint.setLocation(
-                    selectedPoint.getX() - frameStartX,
-                    selectedPoint.getY() - frameStartY);
+                    selectedPoint.getX() - FRAME_START_X,
+                    selectedPoint.getY() - FRAME_START_Y);
         } else {
             targetPoint = e.getPoint();
             targetPoint.setLocation(
-                    targetPoint.getX() - frameStartX,
-                    targetPoint.getY() - frameStartY);
+                    targetPoint.getX() - FRAME_START_X,
+                    targetPoint.getY() - FRAME_START_Y);
         }
         repaint();
     }

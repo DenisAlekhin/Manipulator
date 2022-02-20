@@ -10,6 +10,9 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.*;
 
+import static VisualApp.Utils.StringConstants.SCR_COORD_MANIP_START_X;
+import static VisualApp.Utils.StringConstants.SCR_COORD_MANIP_START_Y;
+
 public class GlobalSearch {
     private final Expression function;
     private final ArrayList<Double> a, b;
@@ -19,8 +22,6 @@ public class GlobalSearch {
     private final ArrayList<Pair<Double, Double>> analysis;
     private final ArrayList<Pair<Double, Double>> stepsOfOneDimensionalAlgorithm;
     private final ArrayList<ArrayList<Double>> stepsOfAlgorithm;
-    private final int scrCoordManipStartX = 78;
-    private final int scrCoordManipStartY = 156;
     private final ArrayList<SortedSet<Integer>> I = new ArrayList<SortedSet<Integer>>();
     private final ArrayList<Double> u = new ArrayList<Double>(Arrays.asList(new Double[5]));
     private final ArrayList<Double> z = new ArrayList<Double>(Arrays.asList(new Double[5]));
@@ -453,9 +454,9 @@ public class GlobalSearch {
     private ArrayList<Double> firstRodDistToObstacles(ArrayList<Double> points, ArrayList<Point2D> obstacles) {
         ArrayList<Double> distToObstacles = new ArrayList<Double>();
         Line2D firstRod = new Line2D.Double(
-                new Point2D.Double(scrCoordManipStartX,scrCoordManipStartY),
-                new Point2D.Double(scrCoordManipStartX+125*points.get(1)*Math.cos(points.get(0)),
-                        scrCoordManipStartY+125*points.get(1)*Math.sin(points.get(0))));
+                new Point2D.Double(SCR_COORD_MANIP_START_X, SCR_COORD_MANIP_START_Y),
+                new Point2D.Double(SCR_COORD_MANIP_START_X+125*points.get(1)*Math.cos(points.get(0)),
+                        SCR_COORD_MANIP_START_Y+125*points.get(1)*Math.sin(points.get(0))));
 
         for(int i = 0; i < obstacles.size(); i++) {
             distToObstacles.add(firstRod.ptSegDist(obstacles.get(i)) - 25);
@@ -466,11 +467,11 @@ public class GlobalSearch {
     private ArrayList<Double> secondRodDistToObstacles(ArrayList<Double> points, ArrayList<Point2D> obstacles) {
         ArrayList<Double> distToObstacles = new ArrayList<Double>();
         Line2D secondRod = new Line2D.Double(
-                new Point2D.Double(scrCoordManipStartX+125*points.get(1)*Math.cos(points.get(0)),
-                        scrCoordManipStartY+125*points.get(1)*Math.sin(points.get(0))),
-                new Point2D.Double(scrCoordManipStartX+125*points.get(1)*Math.cos(points.get(0))+
+                new Point2D.Double(SCR_COORD_MANIP_START_X+125*points.get(1)*Math.cos(points.get(0)),
+                        SCR_COORD_MANIP_START_Y+125*points.get(1)*Math.sin(points.get(0))),
+                new Point2D.Double(SCR_COORD_MANIP_START_X+125*points.get(1)*Math.cos(points.get(0))+
                         125*points.get(3)*Math.cos(points.get(0)+points.get(2)),
-                        scrCoordManipStartY+125*points.get(1)*Math.sin(points.get(0))+
+                        SCR_COORD_MANIP_START_Y+125*points.get(1)*Math.sin(points.get(0))+
                                 125*points.get(3)*Math.sin(points.get(0)+points.get(2))));
 
         for(int i = 0; i < obstacles.size(); i++) {
@@ -482,14 +483,14 @@ public class GlobalSearch {
     private ArrayList<Double>thirdRodDistToObstacles(ArrayList<Double> points, ArrayList<Point2D> obstacles) {
         ArrayList<Double> distToObstacles = new ArrayList<Double>();
         Line2D thirdRod = new Line2D.Double(
-                new Point2D.Double(scrCoordManipStartX+125*points.get(1)*Math.cos(points.get(0))+
+                new Point2D.Double(SCR_COORD_MANIP_START_X+125*points.get(1)*Math.cos(points.get(0))+
                         125*points.get(3)*Math.cos(points.get(0)+points.get(2)),
-                        scrCoordManipStartY+125*points.get(1)*Math.sin(points.get(0))+
+                        SCR_COORD_MANIP_START_Y+125*points.get(1)*Math.sin(points.get(0))+
                                 125*points.get(3)*Math.sin(points.get(0)+points.get(2))),
-                new Point2D.Double(scrCoordManipStartX+125*points.get(1)*Math.cos(points.get(0))+
+                new Point2D.Double(SCR_COORD_MANIP_START_X+125*points.get(1)*Math.cos(points.get(0))+
                         125*points.get(3)*Math.cos(points.get(0)+points.get(2))+
                         125*points.get(5)*Math.cos(points.get(0)+points.get(2)+points.get(4)),
-                        scrCoordManipStartY+125*points.get(1)*Math.sin(points.get(0))+
+                        SCR_COORD_MANIP_START_Y+125*points.get(1)*Math.sin(points.get(0))+
                                 125*points.get(3)*Math.sin(points.get(0)+points.get(2))+
                                 125*points.get(5)*Math.sin(points.get(0)+points.get(2)+points.get(4))));
         for(int i = 0; i < obstacles.size(); i++) {
