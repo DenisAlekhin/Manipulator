@@ -1,17 +1,14 @@
-package VisualApp.GlobalSearch;
+package service.globalsearch;
 
-import VisualApp.Manipulator.Elements.Hinge;
-import VisualApp.Manipulator.Elements.Rod;
 import javafx.util.Pair;
 import net.objecthunter.exp4j.Expression;
-import sun.reflect.generics.tree.Tree;
 
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.*;
 
-import static VisualApp.Utils.StringConstants.SCR_COORD_MANIP_START_X;
-import static VisualApp.Utils.StringConstants.SCR_COORD_MANIP_START_Y;
+import static service.utils.StringConstants.SCR_COORD_MANIP_START_X;
+import static service.utils.StringConstants.SCR_COORD_MANIP_START_Y;
 
 public class GlobalSearch {
     private final Expression function;

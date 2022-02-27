@@ -1,4 +1,4 @@
-package VisualApp.Utils;
+package service.utils;
 
 public class StringConstants {
     public static final Integer FRAME_START_X = 11;

@@ -1,4 +1,4 @@
-package VisualApp.Manipulator.Elements;
+package service.manipulator.elements;
 
 public class Element {
     private int connection;

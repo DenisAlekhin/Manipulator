@@ -1,6 +1,6 @@
-package VisualApp;
+package visual.app;
 
-import VisualApp.Manipulator.Manipulator;
+import service.manipulator.Manipulator;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -98,7 +98,7 @@ public class MainFrame extends JFrame{
         });
         btnGlbSearchSteps.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                manipulator.animatedSetToTarget(150, checkBoxOnlyHingesMoves.isSelected());
+//                manipulator.animatedSetToTarget(150, checkBoxOnlyHingesMoves.isSelected());
             }
         });
 

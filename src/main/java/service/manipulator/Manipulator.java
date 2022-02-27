@@ -1,31 +1,36 @@
-package VisualApp.Manipulator;
+package service.manipulator;
 
-import VisualApp.GlobalSearch.GlobalSearch;
-import VisualApp.Manipulator.Elements.Element;
-import VisualApp.Manipulator.Elements.Hinge;
-import VisualApp.Manipulator.Elements.Rod;
-import javafx.util.Pair;
+import service.globalsearch.GlobalSearch;
+import service.globalsearch.MultidimensionalGlobalSearch;
+import service.manipulator.elements.Element;
+import service.manipulator.elements.Hinge;
+import service.manipulator.elements.Rod;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 
 import javax.swing.*;
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
-import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
-import static VisualApp.Utils.StringConstants.FRAME_START_X;
-import static VisualApp.Utils.StringConstants.FRAME_START_Y;
-import static VisualApp.Utils.StringConstants.MANIP_START_X;
-import static VisualApp.Utils.StringConstants.MANIP_START_Y;
+import static service.utils.StringConstants.FRAME_START_X;
+import static service.utils.StringConstants.FRAME_START_Y;
+import static service.utils.StringConstants.MANIP_START_X;
+import static service.utils.StringConstants.MANIP_START_Y;
 
 public class Manipulator extends JPanel implements MouseListener{
     final double R = 1.5;
@@ -230,25 +235,31 @@ public class Manipulator extends JPanel implements MouseListener{
         selectedPoint = null;
     }
 
-    private Expression buildExpression(boolean onlyHingesMoves) {
+    private String buildFunctionStr(boolean onlyHingesMoves) {
         String x2 = Double.toString(targetPoint.getX());
         String y2 = Double.toString(targetPoint.getY());
         if(onlyHingesMoves) {
             String x1 = "(" + MANIP_START_X + "+125*" + ((Rod)mechanism.get(1)).getCompression() +
-                    "cos(x0)+125*" + ((Rod)mechanism.get(3)).getCompression() + "cos(x0+x1))";
+                    "*cos(x0)+125*" + ((Rod)mechanism.get(3)).getCompression() + "*cos(x0+x1))";
             String y1 = "(" + MANIP_START_Y + "+125*" + ((Rod)mechanism.get(1)).getCompression() +
-                    "sin(x0)+125*" + ((Rod)mechanism.get(3)).getCompression() + "sin(x0+x1))";
-            String func = "sqrt((" + x2 + "-" + x1 + ")*" + "(" + x2 + "-" + x1 + ")+"
+                    "*sin(x0)+125*" + ((Rod)mechanism.get(3)).getCompression() + "*sin(x0+x1))";
+            return "sqrt((" + x2 + "-" + x1 + ")*" + "(" + x2 + "-" + x1 + ")+"
                     + "(" + y2 + "-" + y1 + ")*" + "(" + y2 + "-" + y1 + "))";
-            return new ExpressionBuilder(func)
-                    .variables("x0", "x1")
-                    .build();
         } else {
             String x1 = "(" + MANIP_START_X + "+125*x1*cos(x0)+125*x3*cos(x0+x2))";
             String y1 = "(" + MANIP_START_Y + "+125*x1*sin(x0)+125*x3*sin(x0+x2))";
-            String func = "sqrt((" + x2 + "-" + x1 + ")*" + "(" + x2 + "-" + x1 + ")+"
+            return "sqrt((" + x2 + "-" + x1 + ")*" + "(" + x2 + "-" + x1 + ")+"
                     + "(" + y2 + "-" + y1 + ")*" + "(" + y2 + "-" + y1 + "))";
-            return new ExpressionBuilder(func)
+        }
+    }
+
+    private Expression buildExpression(String functionStr, boolean onlyHingesMoves) {
+        if(onlyHingesMoves) {
+            return new ExpressionBuilder(functionStr)
+                    .variables("x0", "x1")
+                    .build();
+        } else {
+            return new ExpressionBuilder(functionStr)
                     .variables("x0", "x1", "x2", "x3")
                     .build();
         }
@@ -258,7 +269,7 @@ public class Manipulator extends JPanel implements MouseListener{
         return angle * 180 / Math.PI;
     }
 
-    private void moveManipulator(ArrayList<Double> elements, boolean onlyHingesMoves) {
+    private void moveManipulator(List<Double> elements, boolean onlyHingesMoves) {
         if(onlyHingesMoves) {
             for(int i = 0; i < elements.size() - 1; i++) {
                 moveElement(i*2, convertAngleToDeg(elements.get(i)));
@@ -282,24 +293,24 @@ public class Manipulator extends JPanel implements MouseListener{
 
 
     public void setToTarget(boolean onlyHingesMoves) {
-        GlobalSearch globalSearch = setUpGlobalSearch(onlyHingesMoves);
-        ArrayList<Double> result = globalSearch.findMinimum(obstacles);
+        MultidimensionalGlobalSearch globalSearch = setUpGlobalSearch(onlyHingesMoves);
+        List<Double> result = globalSearch.findMinimum();
         moveManipulator(result, onlyHingesMoves);
         setTwoLastElements();
         repaint();
         printResult(result);
     }
 
-    public void animatedSetToTarget(int timeout, boolean onlyHingesMoves) {
-        GlobalSearch globalSearch = setUpGlobalSearch(onlyHingesMoves);
-        globalSearch.findMinimum(obstacles);
-
-        ArrayList<ArrayList<Double>> stepsOfAlgorithm = globalSearch.getStepsOfAlgorithm();
-        stepsAnimation(stepsOfAlgorithm, timeout, onlyHingesMoves);
-
-        repaint();
-        printResult(stepsOfAlgorithm.get(stepsOfAlgorithm.size() - 1));
-    }
+//    public void animatedSetToTarget(int timeout, boolean onlyHingesMoves) {
+//        GlobalSearch globalSearch = setUpGlobalSearch(onlyHingesMoves);
+//        globalSearch.findMinimum(obstacles);
+//
+//        ArrayList<ArrayList<Double>> stepsOfAlgorithm = globalSearch.getStepsOfAlgorithm();
+//        stepsAnimation(stepsOfAlgorithm, timeout, onlyHingesMoves);
+//
+//        repaint();
+//        printResult(stepsOfAlgorithm.get(stepsOfAlgorithm.size() - 1));
+//    }
 
     private void setTwoLastElements() {
         double hingeAngle = -(((Hinge)mechanism.get(0)).getAngle()
@@ -310,7 +321,8 @@ public class Manipulator extends JPanel implements MouseListener{
         moveElement(5, ((Rod)targetConstruction.get(1)).getCompression());
     }
 
-    private void printResult(ArrayList<Double> result) {
+    private void printResult(List<Double> result) {
+
         DecimalFormat df = new DecimalFormat("#.###");
         System.out.print("Result: (");
         for(int i = 0; i < result.size(); i++) {
@@ -336,8 +348,9 @@ public class Manipulator extends JPanel implements MouseListener{
         }
     }
 
-    private GlobalSearch setUpGlobalSearch(boolean onlyHingesMoves) {
-        Expression function = buildExpression(onlyHingesMoves);
+    private MultidimensionalGlobalSearch setUpGlobalSearch(boolean onlyHingesMoves) {
+        String functionStr = buildFunctionStr(onlyHingesMoves);
+        Expression function = buildExpression(functionStr, onlyHingesMoves);
         ArrayList<Double> boundA = new ArrayList<Double>();
         ArrayList<Double> boundB = new ArrayList<Double>();
         if(onlyHingesMoves) {
@@ -356,7 +369,8 @@ public class Manipulator extends JPanel implements MouseListener{
                 }
             }
         }
-        return new GlobalSearch(function, boundA, boundB, EPSILON, R, onlyHingesMoves);
+        return new MultidimensionalGlobalSearch(function, functionStr, boundA, boundB, R, EPSILON);
+//        return new GlobalSearch(function, boundA, boundB, EPSILON, R, onlyHingesMoves);
     }
 
     private void stepsAnimation(final ArrayList<ArrayList<Double>> stepsOfAlgorithm,
