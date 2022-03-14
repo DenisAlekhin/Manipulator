@@ -29,8 +29,10 @@ import java.util.Vector;
 
 import static service.utils.StringConstants.FRAME_START_X;
 import static service.utils.StringConstants.FRAME_START_Y;
+import static service.utils.StringConstants.HINGE_RADIUS;
 import static service.utils.StringConstants.MANIP_START_X;
 import static service.utils.StringConstants.MANIP_START_Y;
+import static service.utils.StringConstants.ROG_LENGTH;
 
 public class Manipulator extends JPanel implements MouseListener{
     final double R = 1.5;
@@ -57,16 +59,16 @@ public class Manipulator extends JPanel implements MouseListener{
 
     /*public void distThirdRod(){
         Line2D thirdRod = new Line2D.Double(
-                new Point2D.Double(75+125*((Rod)mechanism.get(1)).getCompression()*Math.cos(((Hinge)mechanism.get(0)).getAngle())+
-                        125*((Rod)mechanism.get(3)).getCompression()*Math.cos(((Hinge)mechanism.get(0)).getAngle()+((Hinge)mechanism.get(2)).getAngle()),
-                        130+125*((Rod)mechanism.get(1)).getCompression()*Math.sin(((Hinge)mechanism.get(0)).getAngle())+
-                                125*((Rod)mechanism.get(3)).getCompression()*Math.sin(((Hinge)mechanism.get(0)).getAngle()+((Hinge)mechanism.get(2)).getAngle())),
-                new Point2D.Double(75+125*((Rod)mechanism.get(1)).getCompression()*Math.cos(((Hinge)mechanism.get(0)).getAngle())+
-                125*((Rod)mechanism.get(3)).getCompression()*Math.cos(((Hinge)mechanism.get(0)).getAngle()+((Hinge)mechanism.get(2)).getAngle())+
-                        125*((Rod)mechanism.get(3)).getCompression()*Math.cos(((Hinge)mechanism.get(0)).getAngle()+((Hinge)mechanism.get(2)).getAngle()+((Hinge)mechanism.get(4)).getAngle()),
-                130+125*((Rod)mechanism.get(1)).getCompression()*Math.sin(((Hinge)mechanism.get(0)).getAngle())+
-                        125*((Rod)mechanism.get(3)).getCompression()*Math.sin(((Hinge)mechanism.get(0)).getAngle()+((Hinge)mechanism.get(2)).getAngle())+
-                        125*((Rod)mechanism.get(3)).getCompression()*Math.sin(((Hinge)mechanism.get(0)).getAngle()+((Hinge)mechanism.get(2)).getAngle()+((Hinge)mechanism.get(4)).getAngle())));
+                new Point2D.Double(75+ROG_LENGTH*((Rod)mechanism.get(1)).getCompression()*Math.cos(((Hinge)mechanism.get(0)).getAngle())+
+                        ROG_LENGTH*((Rod)mechanism.get(3)).getCompression()*Math.cos(((Hinge)mechanism.get(0)).getAngle()+((Hinge)mechanism.get(2)).getAngle()),
+                        130+ROG_LENGTH*((Rod)mechanism.get(1)).getCompression()*Math.sin(((Hinge)mechanism.get(0)).getAngle())+
+                                ROG_LENGTH*((Rod)mechanism.get(3)).getCompression()*Math.sin(((Hinge)mechanism.get(0)).getAngle()+((Hinge)mechanism.get(2)).getAngle())),
+                new Point2D.Double(75+ROG_LENGTH*((Rod)mechanism.get(1)).getCompression()*Math.cos(((Hinge)mechanism.get(0)).getAngle())+
+                ROG_LENGTH*((Rod)mechanism.get(3)).getCompression()*Math.cos(((Hinge)mechanism.get(0)).getAngle()+((Hinge)mechanism.get(2)).getAngle())+
+                        ROG_LENGTH*((Rod)mechanism.get(3)).getCompression()*Math.cos(((Hinge)mechanism.get(0)).getAngle()+((Hinge)mechanism.get(2)).getAngle()+((Hinge)mechanism.get(4)).getAngle()),
+                130+ROG_LENGTH*((Rod)mechanism.get(1)).getCompression()*Math.sin(((Hinge)mechanism.get(0)).getAngle())+
+                        ROG_LENGTH*((Rod)mechanism.get(3)).getCompression()*Math.sin(((Hinge)mechanism.get(0)).getAngle()+((Hinge)mechanism.get(2)).getAngle())+
+                        ROG_LENGTH*((Rod)mechanism.get(3)).getCompression()*Math.sin(((Hinge)mechanism.get(0)).getAngle()+((Hinge)mechanism.get(2)).getAngle()+((Hinge)mechanism.get(4)).getAngle())));
         for(int i = 0; i < obstacles.size(); i++) {
             System.out.println(thirdRod.ptSegDist(obstacles.get(i)) - 25);
         }
@@ -159,7 +161,7 @@ public class Manipulator extends JPanel implements MouseListener{
             g2d.drawLine(
                     0,
                     0,
-                    (int)(((Rod)targetConstruction.get(1)).getCompression() * 125.0),
+                    (int)(((Rod)targetConstruction.get(1)).getCompression() * ROG_LENGTH),
                     0);
             g2d.setColor(Color.black);
         }
@@ -179,8 +181,8 @@ public class Manipulator extends JPanel implements MouseListener{
             if(i == selectedHinge + 1) {
                 g2d.setColor(Color.red);
             }
-            g2d.drawLine(0,0, (int)(((Rod)mechanism.get(i)).getCompression() * 125.0),0);
-            g2d.translate((int)(((Rod)mechanism.get(i)).getCompression() * 125.0), 0);
+            g2d.drawLine(0,0, (int)(((Rod)mechanism.get(i)).getCompression() * ROG_LENGTH),0);
+            g2d.translate((int)(((Rod)mechanism.get(i)).getCompression() * ROG_LENGTH), 0);
         } else {
             g2d.rotate(((Hinge)mechanism.get(i)).getAngle());
             if(i == selectedHinge) {
@@ -197,9 +199,9 @@ public class Manipulator extends JPanel implements MouseListener{
         g2d.setTransform(Default);
         g2d.setColor(Color.RED);
         for(int i = 0; i < obstacles.size();i++) {
-            g2d.fillOval((int)obstacles.get(i).getX()- 25 - FRAME_START_X,
-                    (int)obstacles.get(i).getY() - 25 - FRAME_START_Y,
-                    50,50);
+            g2d.fillOval((int)obstacles.get(i).getX()- HINGE_RADIUS - FRAME_START_X,
+                    (int)obstacles.get(i).getY() - HINGE_RADIUS - FRAME_START_Y,
+                    HINGE_RADIUS * 2,HINGE_RADIUS * 2);
         }
     }
 
@@ -215,7 +217,7 @@ public class Manipulator extends JPanel implements MouseListener{
                         g2d.setTransform(startPoint);
                     }
                     if(mechanism.get(j) instanceof Rod) {
-                        g2d.translate((int)((Rod)mechanism.get(j)).getCompression() * 125, 0);
+                        g2d.translate((int)((Rod)mechanism.get(j)).getCompression() * ROG_LENGTH, 0);
                     } else {
                         g2d.rotate(((Hinge)mechanism.get(j)).getAngle());
                     }
@@ -294,7 +296,7 @@ public class Manipulator extends JPanel implements MouseListener{
 
     public void setToTarget(boolean onlyHingesMoves) {
         MultidimensionalGlobalSearch globalSearch = setUpGlobalSearch(onlyHingesMoves);
-        List<Double> result = globalSearch.findMinimum();
+        List<Double> result = globalSearch.findMinimum(true, obstacles);
         moveManipulator(result, onlyHingesMoves);
         setTwoLastElements();
         repaint();

@@ -10,10 +10,11 @@ import java.util.List;
 class OneDimensionalGlobalSearch {
     private final Double A, B;
     private final Double R, E;
-    private final List<Pair<Double, Double>> analysis;
+    private final List<Pair<Double, Double>> analysis = new ArrayList<>();
     private Expression FUNC;
+    private Boolean isLastIteration = false;
     private String variable;
-    private Boolean isLastIteration;
+
 
     public OneDimensionalGlobalSearch(Expression func, Double a, Double b,
                                       Double r, Double e){
@@ -22,13 +23,11 @@ class OneDimensionalGlobalSearch {
         B = b;
         R = r;
         E = e;
-        analysis = new ArrayList<>();
         try {
             variable = getVariableName();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        isLastIteration = false;
     }
 
     public Pair<Double, Double> findMinimum(Boolean oneIteration) {
@@ -39,11 +38,10 @@ class OneDimensionalGlobalSearch {
             initAnalysis();
         }
 
-        int t;
         do {
             sortAnalysisByFirstValue();
             double m = calculate_m();
-            t = calculateMaxR(m);
+            int t = calculateMaxR(m);
             double newStudyX = calculateNewStudyPoint(t, m);
             addNewStudyPoint(newStudyX, t);
             isLastIteration = analysis.get(t).getKey() - analysis.get(t - 1).getKey() < E;
@@ -131,7 +129,7 @@ class OneDimensionalGlobalSearch {
                 (analysis.get(index).getKey() - analysis.get(index - 1).getKey());
     }
 
-    private int calculateMaxR(final double m) {
+    private int calculateMaxR(double m) {
         ArrayList<Double> R = new ArrayList<>(analysis.size());
 
         for(int i = 1; i < analysis.size(); i++) {
@@ -143,18 +141,18 @@ class OneDimensionalGlobalSearch {
         return t + 1;
     }
 
-    private double calculateR(int index, final double m) {
+    private double calculateR(int index, double m) {
         double temp = m * (analysis.get(index).getKey() - analysis.get(index - 1).getKey());
         return temp + Math.pow(analysis.get(index).getValue() - analysis.get(index - 1).getValue(), 2) / temp -
                 2 * (analysis.get(index).getValue() + analysis.get(index - 1).getValue());
     }
 
-    private double calculateNewStudyPoint(final int t, final double m) {
+    private double calculateNewStudyPoint(int t, double m) {
         return (analysis.get(t).getKey() + analysis.get(t - 1).getKey()) / 2 -
                 (analysis.get(t).getValue() - analysis.get(t - 1).getValue()) / (2 * m);
     }
 
-    private void addNewStudyPoint(final double newStudyX, final int t){
+    private void addNewStudyPoint(double newStudyX, int t){
         if (newStudyX < analysis.get(t - 1).getKey() || newStudyX > analysis.get(t).getKey()) {
             System.err.println("Error: новая точка исследовая выходит за границы!");
         }

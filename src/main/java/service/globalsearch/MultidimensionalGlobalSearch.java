@@ -1,73 +1,61 @@
 package service.globalsearch;
 
+import lombok.RequiredArgsConstructor;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 public class MultidimensionalGlobalSearch {
     private final Expression FUNC;
     private final String FUNC_STR;
     private final List<Double> A, B;
     private final Double R, E;
-    private final Integer variablesCount;
-    private final Map<Integer, String> variableNames;
-    private final List<List<Double>> analysis;
-    List<OneDimensionalGlobalSearch> oneDimensionalGlobalSearches;
-    List<Double> variables;
+    private Integer variablesCount;
+    private Map<Integer, String> variableNames;
+    private final List<List<Double>> analysis = new ArrayList<>();
+    private List<OneDimensionalGlobalSearch> oneDimensionalGlobalSearches;
+    private List<OneDimensionalGlobalSearchWithLimitations> oneDimensionalGlobalSearchesWithLimitations;
+    private List<Double> variables;
 
-//    private final boolean onlyHingesMoves;
+    public List<Double> findMinimum(boolean withLimitations, ArrayList<Point2D> obstacles){
+        setUp(withLimitations, obstacles);
+        if(withLimitations) {
+            while(!oneDimensionalGlobalSearchesWithLimitations.get(0).isLastIteration()){
+                oneDimensionalGlobalSearchesWithLimitations.get(1).setFunction(getOneDimensionalFunction(1, variables));
+                oneDimensionalGlobalSearchesWithLimitations.get(1).setDistanceToObstaclesVariables(variables);
+                Double executionResult = oneDimensionalGlobalSearchesWithLimitations.get(1).findMinimum(false).getKey();
+                variables.set(1, executionResult);
 
-    public MultidimensionalGlobalSearch(Expression func, String funcStr, List<Double> a, List<Double> b,
-                                 Double r, Double e) {
-        FUNC = func;
-        FUNC_STR = funcStr;
-        A = a;
-        B = b;
-        R = r;
-        E = e;
+                oneDimensionalGlobalSearchesWithLimitations.get(0).setFunction(getOneDimensionalFunction(0, variables));
+                oneDimensionalGlobalSearchesWithLimitations.get(1).setDistanceToObstaclesVariables(variables);
+                executionResult = oneDimensionalGlobalSearchesWithLimitations.get(0).findMinimum(true).getKey();
+                variables.set(0, executionResult);
 
-        Set<String> funcVariableNames = FUNC.getVariableNames();
-        variablesCount = funcVariableNames.size();
+                analysis.add(new ArrayList<>(variables));
+            }
+            List<Double> result = getResult();
+            return result;
+        } else {
+            while(!oneDimensionalGlobalSearches.get(0).isLastIteration()){
+                oneDimensionalGlobalSearches.get(1).setFunction(getOneDimensionalFunction(1, variables));
+                Double executionResult = oneDimensionalGlobalSearches.get(1).findMinimum(false).getKey();
+                variables.set(1, executionResult);
 
-        variableNames = new HashMap<>(variablesCount);
-        int j = 0;
-        for(String variableName: funcVariableNames) {
-            variableNames.put(j++, variableName);
+                oneDimensionalGlobalSearches.get(0).setFunction(getOneDimensionalFunction(0, variables));
+                executionResult = oneDimensionalGlobalSearches.get(0).findMinimum(true).getKey();
+                variables.set(0, executionResult);
+
+                analysis.add(new ArrayList<>(variables));
+            }
+            List<Double> result = getResult();
+            return result;
         }
-        analysis = new ArrayList<>();
-
-        variables = new ArrayList<>(variablesCount);
-        for(int i = 0; i < variablesCount; i++) {
-            double middleOfInterval = (B.get(i) + A.get(i)) / 2;
-            variables.add(middleOfInterval);
-        }
-
-        oneDimensionalGlobalSearches = new ArrayList<>(variablesCount);
-        for(int i = 0; i < variablesCount; i++) {
-            oneDimensionalGlobalSearches.add(new OneDimensionalGlobalSearch(getOneDimensionalFunction(i, variables), A.get(i), B.get(i), R, E));
-        }
-    }
-
-    public List<Double> findMinimum(){
-        while(!oneDimensionalGlobalSearches.get(0).isLastIteration()){
-            oneDimensionalGlobalSearches.get(1).setFunction(getOneDimensionalFunction(1, variables));
-            Double executionResult = oneDimensionalGlobalSearches.get(1).findMinimum(false).getKey();
-            variables.set(1, executionResult);
-
-            oneDimensionalGlobalSearches.get(0).setFunction(getOneDimensionalFunction(0, variables));
-            executionResult = oneDimensionalGlobalSearches.get(0).findMinimum(true).getKey();
-            variables.set(0, executionResult);
-
-            analysis.add(new ArrayList<>(variables));
-        }
-        List<Double> result = getResult();
-        return result;
     }
 
     private Expression getOneDimensionalFunction(final int numberOfVariable, List<Double> variables) {
@@ -90,5 +78,35 @@ public class MultidimensionalGlobalSearch {
         result.add(funcValue);
 
         return result;
+    }
+
+    private void setUp(boolean withLimitations, ArrayList<Point2D> obstacles) {
+        variablesCount = FUNC.getVariableNames().size();
+
+        variableNames = new HashMap<>(variablesCount);
+        int j = 0;
+        for(String variableName: FUNC.getVariableNames()) {
+            variableNames.put(j++, variableName);
+        }
+
+        variables = new ArrayList<>(variablesCount);
+        for(int i = 0; i < variablesCount; i++) {
+            double middleOfInterval = (B.get(i) + A.get(i)) / 2;
+            variables.add(middleOfInterval);
+        }
+
+        if(withLimitations) {
+            oneDimensionalGlobalSearchesWithLimitations = new ArrayList<>(variablesCount);
+            for(int i = 0; i < variablesCount; i++) {
+                oneDimensionalGlobalSearchesWithLimitations.add(new OneDimensionalGlobalSearchWithLimitations(
+                        getOneDimensionalFunction(i, variables), A.get(i), B.get(i), R, E,
+                        new DistanceToObstacles(obstacles, i)));
+            }
+        } else {
+            oneDimensionalGlobalSearches = new ArrayList<>(variablesCount);
+            for(int i = 0; i < variablesCount; i++) {
+                oneDimensionalGlobalSearches.add(new OneDimensionalGlobalSearch(getOneDimensionalFunction(i, variables), A.get(i), B.get(i), R, E));
+            }
+        }
     }
 }
