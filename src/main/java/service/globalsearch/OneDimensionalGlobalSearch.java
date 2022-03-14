@@ -45,8 +45,7 @@ class OneDimensionalGlobalSearch {
             double m = calculate_m();
             t = calculateMaxR(m);
             double newStudyX = calculateNewStudyPoint(t, m);
-            addNewStudyPoint(newStudyX);
-            checkNewStudyPoint(newStudyX, t);
+            addNewStudyPoint(newStudyX, t);
             isLastIteration = analysis.get(t).getKey() - analysis.get(t - 1).getKey() < E;
         } while (!isLastIteration && !oneIteration);
 
@@ -155,14 +154,16 @@ class OneDimensionalGlobalSearch {
                 (analysis.get(t).getValue() - analysis.get(t - 1).getValue()) / (2 * m);
     }
 
-    private void addNewStudyPoint(final double newStudyX){
+    private void addNewStudyPoint(final double newStudyX, final int t){
+        if (newStudyX < analysis.get(t - 1).getKey() || newStudyX > analysis.get(t).getKey()) {
+            System.err.println("Error: новая точка исследовая выходит за границы!");
+        }
+
         FUNC.setVariable(variable, newStudyX);
         analysis.add(new Pair<>(newStudyX, FUNC.evaluate()));
     }
 
-    private void checkNewStudyPoint(final double newStudyX, final int t) {
-        if (newStudyX < analysis.get(t - 1).getKey() || newStudyX > analysis.get(t).getKey()) {
-            System.err.println("Error: новая точка исследовая выходит за границы!");
-        }
+    public List<Pair<Double, Double>> getAnalysis() {
+        return analysis;
     }
 }
