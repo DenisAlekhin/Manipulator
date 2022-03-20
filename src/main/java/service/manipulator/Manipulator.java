@@ -1,12 +1,12 @@
 package service.manipulator;
 
-import service.globalsearch.GlobalSearch;
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
+import service.exceptions.NoSolutionExceptions;
 import service.globalsearch.MultidimensionalGlobalSearch;
 import service.manipulator.elements.Element;
 import service.manipulator.elements.Hinge;
 import service.manipulator.elements.Rod;
-import net.objecthunter.exp4j.Expression;
-import net.objecthunter.exp4j.ExpressionBuilder;
 
 import javax.swing.*;
 import java.awt.BasicStroke;
@@ -29,9 +29,9 @@ import java.util.Vector;
 
 import static service.utils.StringConstants.FRAME_START_X;
 import static service.utils.StringConstants.FRAME_START_Y;
-import static service.utils.StringConstants.HINGE_RADIUS;
 import static service.utils.StringConstants.MANIP_START_X;
 import static service.utils.StringConstants.MANIP_START_Y;
+import static service.utils.StringConstants.OBSTACLE_RADIUS;
 import static service.utils.StringConstants.ROG_LENGTH;
 
 public class Manipulator extends JPanel implements MouseListener{
@@ -199,9 +199,9 @@ public class Manipulator extends JPanel implements MouseListener{
         g2d.setTransform(Default);
         g2d.setColor(Color.RED);
         for(int i = 0; i < obstacles.size();i++) {
-            g2d.fillOval((int)obstacles.get(i).getX()- HINGE_RADIUS - FRAME_START_X,
-                    (int)obstacles.get(i).getY() - HINGE_RADIUS - FRAME_START_Y,
-                    HINGE_RADIUS * 2,HINGE_RADIUS * 2);
+            g2d.fillOval((int)obstacles.get(i).getX()- OBSTACLE_RADIUS - FRAME_START_X,
+                    (int)obstacles.get(i).getY() - OBSTACLE_RADIUS - FRAME_START_Y,
+                    OBSTACLE_RADIUS * 2,OBSTACLE_RADIUS * 2);
         }
     }
 
@@ -296,11 +296,16 @@ public class Manipulator extends JPanel implements MouseListener{
 
     public void setToTarget(boolean onlyHingesMoves) {
         MultidimensionalGlobalSearch globalSearch = setUpGlobalSearch(onlyHingesMoves);
-        List<Double> result = globalSearch.findMinimum(true, obstacles);
-        moveManipulator(result, onlyHingesMoves);
-        setTwoLastElements();
-        repaint();
-        printResult(result);
+        List<Double> result = null;
+        try {
+            result = globalSearch.findMinimum(true, obstacles);
+            moveManipulator(result, onlyHingesMoves);
+            setTwoLastElements();
+            repaint();
+            printResult(result);
+        } catch (NoSolutionExceptions e) {
+            e.printStackTrace();
+        }
     }
 
 //    public void animatedSetToTarget(int timeout, boolean onlyHingesMoves) {

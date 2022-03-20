@@ -8,6 +8,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static service.utils.StringConstants.OBSTACLE_RADIUS;
 import static service.utils.StringConstants.ROG_LENGTH;
@@ -20,6 +21,7 @@ public class DistanceToObstacles {
     private final List<Point2D> obstacles;
     private final Integer indexOfVariable;
     private List<Double> fixedVariables;
+    private Integer mockIndexOfVariable;
 
 
 
@@ -30,13 +32,15 @@ public class DistanceToObstacles {
         if(point < -Math.PI || point > Math.PI) {
             throw new Exception("Error: передана неверая точка");
         }
-        setPoint(point);
-        ArrayList<Double> distancesToObstacle;
-        mockRodCompression();
+        if(Objects.isNull(fixedVariables)) {
+            throw new Exception("Error: не установленны значения переменных");
+        }
+
+        List<Double> distancesToObstacle;
         switch(numberOfRod) {
-            case 1 -> distancesToObstacle = firstRodDistToObstacles();
-            case 2 -> distancesToObstacle = secondRodDistToObstacles();
-            case 3 -> distancesToObstacle = thirdRodDistToObstacles();
+            case 1 -> distancesToObstacle = firstRodDistToObstacles(point);
+            case 2 -> distancesToObstacle = secondRodDistToObstacles(point);
+            case 3 -> distancesToObstacle = thirdRodDistToObstacles(point);
             default -> distancesToObstacle = new ArrayList<>();
         }
 
@@ -48,7 +52,13 @@ public class DistanceToObstacles {
         return true;
     }
 
-    private ArrayList<Double> firstRodDistToObstacles() {
+    public List<Double> firstRodDistToObstacles(Double point) throws Exception{
+        if(Objects.isNull(fixedVariables)) {
+            throw new Exception("Error: не установленны значения переменных");
+        }
+
+        mockRodCompression();
+        setPoint(point);
         ArrayList<Double> distToObstacles = new ArrayList<>();
         Line2D firstRod = new Line2D.Double(
                 new Point2D.Double(SCR_COORD_MANIP_START_X, SCR_COORD_MANIP_START_Y),
@@ -61,7 +71,13 @@ public class DistanceToObstacles {
         return distToObstacles;
     }
 
-    private ArrayList<Double> secondRodDistToObstacles() {
+    public List<Double> secondRodDistToObstacles(Double point) throws Exception{
+        if(Objects.isNull(fixedVariables)) {
+            throw new Exception("Error: не установленны значения переменных");
+        }
+
+        mockRodCompression();
+        setPoint(point);
         ArrayList<Double> distToObstacles = new ArrayList<>();
         Line2D secondRod = new Line2D.Double(
                 new Point2D.Double(SCR_COORD_MANIP_START_X+ROG_LENGTH*fixedVariables.get(1)*Math.cos(fixedVariables.get(0)),
@@ -77,7 +93,13 @@ public class DistanceToObstacles {
         return distToObstacles;
     }
 
-    private ArrayList<Double> thirdRodDistToObstacles() {
+    public ArrayList<Double> thirdRodDistToObstacles(Double point) throws Exception{
+        if(Objects.isNull(fixedVariables)) {
+            throw new Exception("Error: не установленны значения переменных");
+        }
+
+        mockRodCompression();
+        setPoint(point);
         ArrayList<Double> distToObstacles = new ArrayList<>();
         Line2D thirdRod = new Line2D.Double(
                 new Point2D.Double(SCR_COORD_MANIP_START_X+ROG_LENGTH*fixedVariables.get(1)*Math.cos(fixedVariables.get(0))+
@@ -97,13 +119,29 @@ public class DistanceToObstacles {
     }
 
     private void setPoint(double point) {
-        fixedVariables.set(indexOfVariable, point);
+        fixedVariables.set(mockIndexOfVariable, point);
     }
 
     private void mockRodCompression() {
-        fixedVariables.add(1, 1.0);
-        fixedVariables.add(3, 1.0);
-        fixedVariables.add(4, 0.0);
-        fixedVariables.add(5, 1.0);
+        switch (indexOfVariable) {
+            case 0 -> mockIndexOfVariable = 0;
+            case 1 -> mockIndexOfVariable = 2;
+        }
+        if(fixedVariables.size() == 2) {
+            fixedVariables.add(1, 1.0);
+            fixedVariables.add(3, 1.0);
+            fixedVariables.add(4, 0.0);
+            fixedVariables.add(5, 1.0);
+        }
+    }
+
+    public boolean pointCorrespondLimitations(double point) throws Exception{
+        for(int i = 1; i < 4; i++) {
+            if(!rodCorrespondLimitations(i, point)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
