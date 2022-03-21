@@ -39,8 +39,6 @@ public class OneDimensionalGlobalSearchWithLimitations {
 
     public Pair<Double, Double> findMinimum(Boolean oneIteration) throws Exception{
         setUp(oneIteration);
-        boolean newStudyPointCorrespondLimitations;
-
         do {
             sortAnalysisByFirstValue();
             resetSets();
@@ -51,9 +49,12 @@ public class OneDimensionalGlobalSearchWithLimitations {
             double newStudyX = calculateNewStudyPoint(t, u);
             addNewStudyPoint(newStudyX, t);
 
-            newStudyPointCorrespondLimitations = distanceToObstacles.pointCorrespondLimitations(analysis.get(t - 1).getKey());
-            isLastIteration = analysis.get(t).getKey() - analysis.get(t - 1).getKey() < E;
-        } while (!isLastIteration && !oneIteration && newStudyPointCorrespondLimitations);
+            if(oneIteration) {
+                isLastIteration = distanceToObstacles.pointCorrespondLimitations(analysis.get(analysis.size() - 1).getKey());
+            }
+            isLastIteration = isLastIteration ||
+                    analysis.get(t).getKey() - analysis.get(t - 1).getKey() < E;
+        } while (!isLastIteration && !oneIteration);
 
         if(oneIteration && !isLastIteration) {
             return analysis.get(analysis.size() - 1);
@@ -145,7 +146,8 @@ public class OneDimensionalGlobalSearchWithLimitations {
     }
 
     private List<Double> calculate_u() throws Exception{
-        List<Double> u = new ArrayList<Double>(Arrays.asList(new Double[5]));
+        List<Double> u = new ArrayList<>();
+        u.add(0.0);
         for(int i = 1; i < I.size(); i++) {
             ArrayList<Integer> Iv = new ArrayList<Integer>(I.get(i));
             if (Iv.size() >= 2) {
@@ -155,14 +157,14 @@ public class OneDimensionalGlobalSearchWithLimitations {
                         max_u = Math.max(calculateTemp_u(indexI, indexJ, i, Iv), max_u);
                 }
                 if(max_u > 0) {
-                    u.set(i, max_u);
+                    u.add(max_u);
                 } else if(max_u == 0){
-                    u.set(i, 1.0);
+                    u.add(1.0);
                 } else {
                     throw new Exception("Error: u < 0");
                 }
             } else {
-                u.set(i, 1.0);
+                u.add(1.0);
             }
         }
 

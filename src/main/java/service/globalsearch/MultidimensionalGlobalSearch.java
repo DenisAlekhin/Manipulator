@@ -37,9 +37,8 @@ public class MultidimensionalGlobalSearch {
                 try {
                     executionResult = oneDimensionalGlobalSearchesWithLimitations.get(1).findMinimum(false);
                     variables.set(1, executionResult.getKey());
-                } catch (NoSolutionExceptions e) {
-                    e.printStackTrace();
-                    break;
+                } catch (NoSolutionExceptions ignored) {
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

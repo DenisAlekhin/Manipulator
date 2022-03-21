@@ -35,7 +35,7 @@ import static service.utils.StringConstants.OBSTACLE_RADIUS;
 import static service.utils.StringConstants.ROG_LENGTH;
 
 public class Manipulator extends JPanel implements MouseListener{
-    final double R = 1.5;
+    final double R = 3;
     final double EPSILON = 0.01;
     private ArrayList<Element> mechanism = new ArrayList();
     private ArrayList<Point2D> obstacles = new ArrayList();
