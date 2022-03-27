@@ -30,30 +30,33 @@ public class MultidimensionalGlobalSearch {
     public List<Double> findMinimum(boolean withLimitations, ArrayList<Point2D> obstacles){
         setUp(withLimitations, obstacles);
         if(withLimitations) {
-            while(!oneDimensionalGlobalSearchesWithLimitations.get(0).isLastIteration()){
-                oneDimensionalGlobalSearchesWithLimitations.get(1).setFunction(getOneDimensionalFunction(1, variables));
-                oneDimensionalGlobalSearchesWithLimitations.get(1).setDistanceToObstaclesVariables(variables);
+            while(!oneDimensionalGlobalSearchesWithLimitations.get(1).isLastIteration()){
+                oneDimensionalGlobalSearchesWithLimitations.get(0).setFunction(getOneDimensionalFunction(0, variables));
+                oneDimensionalGlobalSearchesWithLimitations.get(0).setDistanceToObstaclesVariables(variables);
                 Pair<Double, Double> executionResult;
                 try {
-                    executionResult = oneDimensionalGlobalSearchesWithLimitations.get(1).findMinimum(false);
-                    variables.set(1, executionResult.getKey());
+                    executionResult = oneDimensionalGlobalSearchesWithLimitations.get(0).findMinimum(false);
+                    variables.set(0, executionResult.getKey());
                 } catch (NoSolutionExceptions ignored) {
-
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
 
-                oneDimensionalGlobalSearchesWithLimitations.get(0).setFunction(getOneDimensionalFunction(0, variables));
-                oneDimensionalGlobalSearchesWithLimitations.get(0).setDistanceToObstaclesVariables(variables);
+                oneDimensionalGlobalSearchesWithLimitations.get(1).setFunction(getOneDimensionalFunction(1, variables));
+                oneDimensionalGlobalSearchesWithLimitations.get(1).setDistanceToObstaclesVariables(variables);
                 try {
-                    executionResult = oneDimensionalGlobalSearchesWithLimitations.get(0).findMinimum(true);
-                    variables.set(0, executionResult.getKey());
+                    executionResult = oneDimensionalGlobalSearchesWithLimitations.get(1).findMinimum(true);
+                    variables.set(1, executionResult.getKey());
                     analysis.add(new ArrayList<>(variables));
                     analysis.get(analysis.size() - 1).add(executionResult.getValue());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
+            for(int i = 0; i < analysis.size(); i++) {
+                System.out.println(i + ": " + analysis.get(i));
+            }
+
             return getResultWithLimitations(obstacles);
         } else {
             while(!oneDimensionalGlobalSearches.get(0).isLastIteration()){
@@ -90,11 +93,7 @@ public class MultidimensionalGlobalSearch {
             DistanceToObstacles distanceToObstacles = new DistanceToObstacles(obstacles, 0);
             distanceToObstacles.setFixedVariables(new ArrayList<>(Arrays.asList(e.get(0), e.get(1))));
             try {
-                if(distanceToObstacles.rodCorrespondLimitations(1, e.get(0))) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return distanceToObstacles.rodCorrespondLimitations(1, e.get(0));
             } catch (Exception ex) {
                 ex.printStackTrace();
                 return false;

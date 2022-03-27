@@ -39,6 +39,8 @@ public class OneDimensionalGlobalSearchWithLimitations {
 
     public Pair<Double, Double> findMinimum(Boolean oneIteration) throws Exception{
         setUp(oneIteration);
+
+        boolean newPointCorrespondLimitations = true;
         do {
             sortAnalysisByFirstValue();
             resetSets();
@@ -48,15 +50,13 @@ public class OneDimensionalGlobalSearchWithLimitations {
             int t = calculateMaxIndexR(u, z);
             double newStudyX = calculateNewStudyPoint(t, u);
             addNewStudyPoint(newStudyX, t);
-
             if(oneIteration) {
-                isLastIteration = distanceToObstacles.pointCorrespondLimitations(analysis.get(analysis.size() - 1).getKey());
+                newPointCorrespondLimitations = distanceToObstacles.pointCorrespondLimitations(analysis.get(analysis.size() - 1).getKey());
             }
-            isLastIteration = isLastIteration ||
-                    analysis.get(t).getKey() - analysis.get(t - 1).getKey() < E;
-        } while (!isLastIteration && !oneIteration);
+            isLastIteration = Math.abs(analysis.get(t).getKey() - analysis.get(t - 1).getKey()) < E;
+        } while (!(isLastIteration || oneIteration) || !newPointCorrespondLimitations);
 
-        if(oneIteration && !isLastIteration) {
+        if(oneIteration) {
             return analysis.get(analysis.size() - 1);
         } else {
             return getResult();
@@ -98,20 +98,14 @@ public class OneDimensionalGlobalSearchWithLimitations {
         });
     }
 
-    private void addNewStudyPoint(final double newStudyX, final int t){
+    private void addNewStudyPoint(final double newStudyX, final int t) throws Exception{
         if (newStudyX < analysis.get(t - 1).getKey() || newStudyX > analysis.get(t).getKey()) {
             System.err.println("Error: новая точка исследовая выходит за границы!");
         }
-        if (analysis.contains(new Pair<Double, Double>(newStudyX, FUNC.setVariable(variable, newStudyX).evaluate()))) {
-            System.err.println("Error: new study point is the same");
+        if (analysis.contains(new Pair<>(newStudyX, FUNC.setVariable(variable, newStudyX).evaluate())) ||
+        analysis.stream().anyMatch(p -> Math.abs(p.getKey() - newStudyX) < 0.0000000000001)) {
+            throw new Exception("Error: новая точка исследования совпадает с существующей");
         }
-//        for (double i = -3.04; i <= 3.14; i += 0.1) {
-//            if(FUNC.setVariable(variable, i).evaluate() == FUNC.setVariable(variable, i - 0.1).evaluate()) {
-//                System.err.println("function error");
-//                break;
-//            }
-//        }
-
         analysis.add(new Pair<>(newStudyX, FUNC.setVariable(variable, newStudyX).evaluate()));
     }
 
@@ -153,8 +147,10 @@ public class OneDimensionalGlobalSearchWithLimitations {
             if (Iv.size() >= 2) {
                 double max_u = calculateTemp_u(1, 0, i, Iv);
                 for (int indexJ = 1; indexJ < Iv.size(); indexJ++) {
-                    for (int indexI = indexJ + 1; indexI < Iv.size(); indexI++)
-                        max_u = Math.max(calculateTemp_u(indexI, indexJ, i, Iv), max_u);
+//                    for (int indexI = indexJ + 1; indexI < Iv.size(); indexI++) {
+//                        max_u = Math.max(calculateTemp_u(indexI, indexJ, i, Iv), max_u);
+//                    }
+                    max_u = Math.max(calculateTemp_u(indexJ, indexJ - 1, i, Iv), max_u);
                 }
                 if(max_u > 0) {
                     u.add(max_u);

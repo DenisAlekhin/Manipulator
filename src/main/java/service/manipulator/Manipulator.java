@@ -330,7 +330,7 @@ public class Manipulator extends JPanel implements MouseListener{
 
     private void printResult(List<Double> result) {
 
-        DecimalFormat df = new DecimalFormat("#.###");
+        DecimalFormat df = new DecimalFormat("#.#");
         System.out.print("Result: (");
         for(int i = 0; i < result.size(); i++) {
             System.out.print(df.format(result.get(i)));
