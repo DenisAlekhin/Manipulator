@@ -1,17 +1,11 @@
-package VisualApp.GlobalSearch;
+package service.globalsearch;
 
-import VisualApp.Manipulator.Elements.Hinge;
-import VisualApp.Manipulator.Elements.Rod;
 import javafx.util.Pair;
 import net.objecthunter.exp4j.Expression;
-import sun.reflect.generics.tree.Tree;
 
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.*;
-
-import static VisualApp.Utils.StringConstants.SCR_COORD_MANIP_START_X;
-import static VisualApp.Utils.StringConstants.SCR_COORD_MANIP_START_Y;
 
 public class GlobalSearch {
     private final Expression function;
@@ -22,9 +16,12 @@ public class GlobalSearch {
     private final ArrayList<Pair<Double, Double>> analysis;
     private final ArrayList<Pair<Double, Double>> stepsOfOneDimensionalAlgorithm;
     private final ArrayList<ArrayList<Double>> stepsOfAlgorithm;
+    private final int scrCoordManipStartX = 78;
+    private final int scrCoordManipStartY = 156;
     private final ArrayList<SortedSet<Integer>> I = new ArrayList<SortedSet<Integer>>();
     private final ArrayList<Double> u = new ArrayList<Double>(Arrays.asList(new Double[5]));
     private final ArrayList<Double> z = new ArrayList<Double>(Arrays.asList(new Double[5]));
+
     {
         Collections.fill(u, 0.0);
     }
@@ -32,18 +29,18 @@ public class GlobalSearch {
     public GlobalSearch(Expression function, ArrayList<Double> a, ArrayList<Double> b,
                         double epsilon, double r, boolean onlyHingesMoves) {
         try {
-            if(a.size() != b.size()) {
+            if (a.size() != b.size()) {
                 throw new Exception("Error: wrong count of borders");
             }
-            for(int i = 0; i < a.size(); i++) {
-                if(a.get(i) > b.get(i)) {
+            for (int i = 0; i < a.size(); i++) {
+                if (a.get(i) > b.get(i)) {
                     throw new Exception("Error: a > b");
                 }
             }
-            if(r <= 0) {
+            if (r <= 0) {
                 throw new Exception("Error: r <= 1");
             }
-            if(epsilon <= 0) {
+            if (epsilon <= 0) {
                 throw new Exception("Error: epsilon <= 0");
             }
         } catch (Exception e) {
@@ -54,20 +51,20 @@ public class GlobalSearch {
         this.a = a;
         this.b = b;
         this.epsilon = epsilon;
-        this.r = r;
+        this.r = 3;
         this.onlyHingesMoves = onlyHingesMoves;
         analysis = new ArrayList<Pair<Double, Double>>();
         stepsOfOneDimensionalAlgorithm = new ArrayList<Pair<Double, Double>>();
         stepsOfAlgorithm = new ArrayList<ArrayList<Double>>();
     }
 
-    public ArrayList<Double> findMinimum(ArrayList<Point2D> obstacles){
+    public ArrayList<Double> findMinimum(ArrayList<Point2D> obstacles) {
         ArrayList<Double> result = new ArrayList<Double>();
         int countOfDimensions = function.getVariableNames().size();
-        ArrayList<Integer> countOfCalc= new ArrayList<Integer>();
+        ArrayList<Integer> countOfCalc = new ArrayList<Integer>();
 
-        for(int i = 0; i < countOfDimensions; i++) {
-            if(!onlyHingesMoves && i % 2 != 0) {
+        for (int i = 0; i < countOfDimensions; i++) {
+            if (!onlyHingesMoves && i % 2 != 0) {
                 result.add(1.0);
             } else {
                 result.add(0.0);
@@ -79,23 +76,24 @@ public class GlobalSearch {
         stepsOfAlgorithm.add(new ArrayList<Double>(result));
         stepsOfAlgorithm.get(stepsOfAlgorithm.size() - 1).add(function.evaluate());
 
-        int  p = 0;
+        int p = 0;
         double previousRes = -1;
         do {
-            for(int i = countOfDimensions - 1; i >= 0; i--) {
+            for (int i = countOfDimensions - 1; i >= 0; i--) {
                 countOfCalc.set(i, countOfCalc.get(i) + 1);
                 result.set(i, findOneDimensionalMinimumWithLimitations("x" + i, i, result, obstacles).getKey());
                 function.setVariable("x" + i, result.get(i));
-                //saveStepsOfAlgorithm(result, i);
-                if(i != 0 && countOfCalc.get(i) < 2) {
-                    for(int k = i + 1; k < countOfDimensions - 1; k++) {
+                // УБРАТЬ ЕСЛИ НЕ БУДЕТ РАБОТАТЬ
+                saveStepsOfAlgorithm(result, i);
+                if (i != 0 && countOfCalc.get(i) < 2) {
+                    for (int k = i + 1; k < countOfDimensions - 1; k++) {
                         countOfCalc.set(k, 0);
                     }
                     i = -1;
                 }
             }
-            // !!!КОСТЫЛЬ!!!, НО РАБОТАЕТ :)
-            if(previousRes != -1 && previousRes == function.evaluate()) {
+            // !!!КОСТЫЛЬ!!!
+            /*if(previousRes != -1 && previousRes == function.evaluate()) {
                 if(result.get(0) > 0){
                     result.set(0, -1.5708);
                     result.set(1, 1.5708);
@@ -107,21 +105,20 @@ public class GlobalSearch {
                     function.setVariable("x" + 0, result.get(0));
                     function.setVariable("x" + 1, result.get(1));
             }
-
-            previousRes = function.evaluate();
+            previousRes = function.evaluate();*/
             p++;
         } while (function.evaluate() > 0.5 && p < 100);
-        /*if(p == 100) {
+        if(p == 100) {
             System.out.println("Точка недостижима");
-        }*/
-        for(int j = 0; j < countOfDimensions; j++) {
+        }
+        for (int j = 0; j < countOfDimensions; j++) {
             function.setVariable("x" + j, result.get(j));
         }
         result.add(countOfDimensions, function.evaluate());
         return result;
     }
 
-    public Pair<Double, Double> findOneDimensionalMinimum(String variable, int numberOfVariable){
+    public Pair<Double, Double> findOneDimensionalMinimum(String variable, int numberOfVariable) {
         analysis.clear();
         stepsOfOneDimensionalAlgorithm.clear();
         analysis.add(new Pair<Double, Double>(a.get(numberOfVariable),
@@ -141,8 +138,10 @@ public class GlobalSearch {
 
             double newStudyX = (analysis.get(t).getKey() + analysis.get(t - 1).getKey()) / 2 -
                     (analysis.get(t).getValue() - analysis.get(t - 1).getValue()) / (2 * m);
-            analysis.add(new Pair<Double, Double>(newStudyX, function.setVariable(variable, newStudyX).evaluate()));
-            stepsOfOneDimensionalAlgorithm.add(new Pair<Double, Double>(newStudyX, function.setVariable(variable, newStudyX).evaluate()));
+            analysis.add(new Pair<Double, Double>(newStudyX,
+                    function.setVariable(variable, newStudyX).evaluate()));
+            stepsOfOneDimensionalAlgorithm.add(new Pair<Double, Double>(newStudyX,
+                    function.setVariable(variable, newStudyX).evaluate()));
             if (newStudyX < analysis.get(t - 1).getKey() || newStudyX > analysis.get(t).getKey())
                 try {
                     throw new Exception("Error: New study out of range");
@@ -158,7 +157,7 @@ public class GlobalSearch {
 
     public Pair<Double, Double> findOneDimensionalMinimumWithLimitations(
             String variable, int numberOfVariable,
-            ArrayList<Double> points, ArrayList<Point2D> obstacles){
+            ArrayList<Double> points, ArrayList<Point2D> obstacles) {
         analysis.clear();
         resetSets();
         I.clear();
@@ -168,8 +167,8 @@ public class GlobalSearch {
                 function.setVariable(variable, a.get(numberOfVariable)).evaluate()));
         analysis.add(new Pair<Double, Double>(b.get(numberOfVariable),
                 function.setVariable(variable, b.get(numberOfVariable)).evaluate()));
-        analysis.add(new Pair<Double, Double>((analysis.get(0).getKey() + analysis.get(1).getKey()) / 2,
-                function.setVariable(variable, (analysis.get(0).getKey() - analysis.get(1).getKey()) / 2).evaluate()));
+        //analysis.add(new Pair<Double, Double>((analysis.get(0).getKey() + analysis.get(1).getKey()) / 2,
+        //        function.setVariable(variable, (analysis.get(0).getKey() - analysis.get(1).getKey()) / 2).evaluate()));
         int t;
         do {
             sortAnalysisByFirstValue();
@@ -182,7 +181,7 @@ public class GlobalSearch {
                 break;
             }
             calculate_z(points, numberOfVariable, obstacles);
-            t = calculateMaxIndexR();
+            t = calculateMaxIndexR(points, numberOfVariable, obstacles);
 
             double newStudyX = calculateNewStudyPoint(t, points, numberOfVariable, obstacles);
             if (newStudyX < analysis.get(t - 1).getKey() || newStudyX > analysis.get(t).getKey()) {
@@ -190,11 +189,19 @@ public class GlobalSearch {
                         ") out of range([" + analysis.get(t - 1).getKey() +
                         ", " + analysis.get(t).getKey() + "])");
             }
-            if(analysis.contains(new Pair<Double, Double>(newStudyX, function.setVariable(variable, newStudyX).evaluate()))) {
+            if (analysis.contains(new Pair<Double, Double>(newStudyX, function.setVariable(variable, newStudyX).evaluate()))) {
                 System.err.println("Error: new study point is the same");
             }
-            analysis.add(new Pair<Double, Double>(newStudyX, function.setVariable(variable, newStudyX).evaluate()));
-            stepsOfOneDimensionalAlgorithm.add(new Pair<Double, Double>(newStudyX, function.setVariable(variable, newStudyX).evaluate()));
+            for (double i = -3.04; i <= 3.14; i += 0.1) {
+                if(function.setVariable(variable, i).evaluate() == function.setVariable(variable, i - 0.1).evaluate()) {
+                    System.err.println("function error");
+                    break;
+                }
+            }
+            analysis.add(new Pair<Double, Double>(newStudyX,
+                    function.setVariable(variable, newStudyX).evaluate()));
+            stepsOfOneDimensionalAlgorithm.add(new Pair<Double, Double>(newStudyX,
+                    function.setVariable(variable, newStudyX).evaluate()));
 
         } while (analysis.get(t).getKey() - analysis.get(t - 1).getKey() > epsilon);
 
@@ -202,32 +209,35 @@ public class GlobalSearch {
     }
 
     private Pair<Double, Double> getResult() {
-        ArrayList<Integer> Iv = new ArrayList<Integer>(I.get(4));
+        ArrayList<Integer> Iv = new ArrayList<Integer>(I.get(3));
         ArrayList<Pair<Double, Double>> result = new ArrayList<Pair<Double, Double>>(Iv.size());
-        for(int i = 0; i < Iv.size(); i++) {
+        for (int i = 0; i < Iv.size(); i++) {
             result.add(analysis.get(Iv.get(i)));
         }
 
         Collections.sort(result, new Comparator<Pair<Double, Double>>() {
             public int compare(Pair<Double, Double> o1, Pair<Double, Double> o2) {
-                if(o1.getValue() < o2.getValue()) {
+                if (o1.getValue() < o2.getValue()) {
                     return -1;
-                } else if(o1.getValue() > o2.getValue()) {
+                } else if (o1.getValue() > o2.getValue()) {
                     return 1;
                 }
                 return 0;
             }
         });
-        if(result.size() == 0) {
+        if (result.size() == 0) {
             System.err.println("Точка не достижима ");
         }
 
+        if(result.size() == 0) {
+            System.err.println("Нет точки удовлетворяющей ограничениям");
+        }
         return result.get(0);
     }
 
-    private double calculateNewStudyPoint(int t,  ArrayList<Double> points,
+    private double calculateNewStudyPoint(int t, ArrayList<Double> points,
                                           int numberOfVariable, ArrayList<Point2D> obstacles) {
-        /*double Xt = analysis.get(t).getKey();
+        double Xt = analysis.get(t).getKey();
         // j = t - 1
         double Xj = analysis.get(t - 1).getKey();
         double Zt = calcGv(analysis.get(t).getKey(), calculateVForPoint(t), points, numberOfVariable, obstacles);
@@ -235,13 +245,12 @@ public class GlobalSearch {
         double Zj = calcGv(analysis.get(t - 1).getKey(), calculateVForPoint(t - 1), points, numberOfVariable, obstacles);
 
         double u = this.u.get(calculateVForPoint(t));
-        if(calculateVForPoint(t - 1) != calculateVForPoint(t)) {
-            return (Xt + Xj) / 2 - (Zt - Zt) / (2 * u * r);
+        if (calculateVForPoint(t - 1) != calculateVForPoint(t)) {
+            return (Xt + Xj) / 2;
         } else {
             return (Xt + Xj) / 2 -
-                    sgn((Zt - Zj)) * Math.pow((Zt - Zj), 2)  /
-                            (2 * r * Math.pow(u, 2));
-        }*/
+                    (Zt - Zj) / (2 * r * u);
+        }/*
         double Xt = analysis.get(t).getKey();
         // j = t - 1
         double Xj = analysis.get(t - 1).getKey();
@@ -255,7 +264,7 @@ public class GlobalSearch {
         } else {
             return (Xt + Xj) / 2 -
                     (Zt - Zj)  / (2 * r * u);
-        }
+        }*/
     }
     /*
     private int sgn(double x) {
@@ -268,11 +277,12 @@ public class GlobalSearch {
         }
     }*/
 
-    private int calculateMaxIndexR() {
+    private int calculateMaxIndexR(ArrayList<Double> points,
+                                   int numberOfVariable, ArrayList<Point2D> obstacles) {
         ArrayList<Double> R = new ArrayList<Double>(analysis.size());
 
-        for(int i = 1; i < analysis.size(); i++) {
-            R.add(calculateIndexR(i));
+        for (int i = 1; i < analysis.size(); i++) {
+            R.add(calculateIndexR(i, points, numberOfVariable, obstacles));
         }
         double maxR = Collections.max(R);
         int t = R.lastIndexOf(maxR);
@@ -280,25 +290,30 @@ public class GlobalSearch {
         return t + 1;
     }
 
-    private double calculateIndexR(int index) {
+    private double calculateIndexR(int index, ArrayList<Double> points,
+                                   int numberOfVariable, ArrayList<Point2D> obstacles) {
         int v = calculateVForPoint(index);
-        double u = Collections.max(this.u);
-        double z = Collections.min(this.z);
-        // !!!КОСТЫЛЬ!!! (Если делать как по алгоритму, то нужно раскоментировать)
-        //if(calculateVForPoint(index - 1) == calculateVForPoint(index)) {
-            return calculateIndexRFormula1(index, u, z);
-        //} else if(calculateVForPoint(index - 1) > calculateVForPoint(index)) {
-        //    return calculateIndexRFormula2(index, u, z);
-        //} else {
-        //    return calculateIndexRFormula3(index, u, z);
-        //}
+        //double u = Collections.max(this.u.subList(1, this.u.size() - 1));
+        //double z = Collections.min(this.z.subList(1, this.u.size() - 1));
+        //double u = this.u.get(v);
+        //double z = this.z.get(v);
+        if (calculateVForPoint(index - 1) == calculateVForPoint(index)) {
+            return calculateIndexRFormula1(index, points, numberOfVariable, obstacles);
+        } else if (calculateVForPoint(index - 1) > calculateVForPoint(index)) {
+            return calculateIndexRFormula2(index, points, numberOfVariable, obstacles);
+        } else {
+            return calculateIndexRFormula3(index, points, numberOfVariable, obstacles);
+        }
     }
 
-    private double calculateIndexRFormula1(int index, double u, double z) {
+    private double calculateIndexRFormula1(int index, ArrayList<Double> points,
+                                           int numberOfVariable, ArrayList<Point2D> obstacles) {
+        double u = this.u.get(calculateVForPoint(index));
+        double z = this.z.get(calculateVForPoint(index));
         double deltaI = analysis.get(index).getKey() - analysis.get(index - 1).getKey();
-        double Zi = analysis.get(index).getValue();
+        double Zi = calcGv(analysis.get(index).getKey(), calculateVForPoint(index), points, numberOfVariable, obstacles);
         // j = i - 1
-        double Zj = analysis.get(index - 1).getValue();
+        double Zj = calcGv(analysis.get(index - 1).getKey(), calculateVForPoint(index - 1), points, numberOfVariable, obstacles);
 
 
         //return u * r * deltaI + Math.pow(Zi - Zj, 2) / (u * r * deltaI) - 2 * (Zi + Zj);
@@ -308,75 +323,82 @@ public class GlobalSearch {
                 (2 * (Zi + Zj - 2 * z)) / (r * u);
     }
 
-    private double calculateIndexRFormula2(int index, double u, double z) {
+    private double calculateIndexRFormula2(int index, ArrayList<Double> points,
+                                           int numberOfVariable, ArrayList<Point2D> obstacles) {
+        double u = this.u.get(calculateVForPoint(index - 1));
+        double z = this.z.get(calculateVForPoint(index - 1));
         double deltaI = analysis.get(index).getKey() - analysis.get(index - 1).getKey();
         // j = i - 1
-        double Zj = analysis.get(index - 1).getValue();
+        double Zj = calcGv(analysis.get(index - 1).getKey(), calculateVForPoint(index - 1), points, numberOfVariable, obstacles);
 
         return 2 * deltaI -
                 4 * (Zj - z) / (r * u);
     }
 
-    private double calculateIndexRFormula3(int index, double u, double z) {
+    private double calculateIndexRFormula3(int index, ArrayList<Double> points,
+                                           int numberOfVariable, ArrayList<Point2D> obstacles) {
+        double u = this.u.get(calculateVForPoint(index));
+        double z = this.z.get(calculateVForPoint(index));
         double deltaI = analysis.get(index).getKey() - analysis.get(index - 1).getKey();
-        double Zi = analysis.get(index).getValue();
+        double Zi = calcGv(analysis.get(index).getKey(), calculateVForPoint(index), points, numberOfVariable, obstacles);
 
         return 2 * deltaI -
                 4 * (Zi - z) / (r * u);
     }
 
     private void calculate_z(ArrayList<Double> points, int numberOfVariable, ArrayList<Point2D> obstacles) {
-        /*ArrayList<Double> Zv = new ArrayList<Double>();
-        ArrayList<Integer> Iv = new ArrayList<Integer>(I.get(4));
-        for(int i = 0; i < 5; i++) {
-            double minZ = calcGv(analysis.get(Iv.get(0)).getKey(), i, points, numberOfVariable, obstacles);
-            for(int j = 1; j < Iv.size(); j++) {
-                minZ = Math.min(calcGv(analysis.get(Iv.get(0)).
-                                getKey(), i, points, numberOfVariable, obstacles),
-                        minZ);
+        int maxV = 0;
+        for (int i = 1; i < I.size(); i++) {
+            if (I.get(i).size() != 0) {
+                maxV = i;
             }
-            Zv.add(minZ);
         }
-        z = Collections.min(Zv);*/
-        for(int i = 0; i < 5; i++) {
+        for (int i = 1; i < I.size(); i++) {
+            if (i == maxV) {
+                ArrayList<Integer> Iv = new ArrayList<Integer>(I.get(i));
+                double minZ = calcGv(analysis.get(Iv.get(0)).getKey(), maxV, points, numberOfVariable, obstacles);
+                for (int j = 1; j < Iv.size(); j++) {
+                    minZ = Math.min(calcGv(analysis.get(Iv.get(j)).getKey(), maxV, points, numberOfVariable, obstacles)
+                            , minZ);
+                }
+                z.set(i, minZ);
+            } else {
+                z.set(i, 0.0);
+            }
+        }
+
+
+        /*for (int i = 1; i < I.size(); i++) {
             ArrayList<Integer> Iv = new ArrayList<Integer>(I.get(i));
-            if(Iv.size() != 0) {
+            if (Iv.size() != 0) {
                 double minZ = analysis.get(Iv.get(0)).getValue();
-                for(int j = 1; j < Iv.size(); j++) {
+                for (int j = 1; j < Iv.size(); j++) {
                     minZ = Math.min(analysis.get(Iv.get(0)).getValue(), minZ);
                 }
                 z.set(i, minZ);
             } else {
                 z.set(i, 0.0);
             }
-        }/*
-        z = analysis.get(0).getValue();
-        for(int i = 1; i < analysis.size(); i++) {
-            z = Math.min(z, analysis.get(i).getValue());
         }*/
     }
 
-
-     private void resetSets() {
+    private void resetSets() {
         for(int i = 0; i < I.size(); i++) {
             I.get(i).clear();
         }
     }
 
     private void initializeI(ArrayList<Point2D> obstacles) {
-        for(int i = 0; i < 5; i++) {
+        for(int i = 0; i < 4; i++) {
             I.add(new TreeSet<Integer>());
         }
+
     }
 
     private void calculateI(ArrayList<Double> points, ArrayList<Point2D> obstacles, int numberOfVariable) {
-        for(int i = 1; i < analysis.size() - 1; i++) {
+        for(int i = 0; i < analysis.size(); i++) {
             I.get(calculateV(points, obstacles, analysis.get(i).getKey(), numberOfVariable)).add(i);
         }
-
-        // first and last point goes to I with v = 0 by default
-        I.get(0).add(0);
-        I.get(0).add(analysis.size() - 1);
     }
 
     private int calculateV(ArrayList<Double> points, ArrayList<Point2D> obstacles,
@@ -385,11 +407,7 @@ public class GlobalSearch {
         ArrayList<Double> pointsCopy = copyPoints(points);
         if(firstRodCorrespondLimitations(pointsCopy, obstacles)){
             if(secondRodCorrespondLimitations(pointsCopy, obstacles)) {
-                if(thirdRodCorrespondLimitations(pointsCopy, obstacles)){
-                    return 4;
-                } else {
-                    return 3;
-                }
+                return 3;
             } else{
                 return 2;
             }
@@ -398,7 +416,7 @@ public class GlobalSearch {
         }
     }
     private int calculateVForPoint(int point) {
-        for(int i = 0; i < 5; i++) {
+        for(int i = 1; i < I.size(); i++) {
             ArrayList<Integer> Iv = new ArrayList<Integer>(I.get(i));
             for(int j = 0; j < Iv.size(); j++) {
                 if(Iv.contains(point)) {
@@ -454,9 +472,9 @@ public class GlobalSearch {
     private ArrayList<Double> firstRodDistToObstacles(ArrayList<Double> points, ArrayList<Point2D> obstacles) {
         ArrayList<Double> distToObstacles = new ArrayList<Double>();
         Line2D firstRod = new Line2D.Double(
-                new Point2D.Double(SCR_COORD_MANIP_START_X, SCR_COORD_MANIP_START_Y),
-                new Point2D.Double(SCR_COORD_MANIP_START_X+125*points.get(1)*Math.cos(points.get(0)),
-                        SCR_COORD_MANIP_START_Y+125*points.get(1)*Math.sin(points.get(0))));
+                new Point2D.Double(scrCoordManipStartX,scrCoordManipStartY),
+                new Point2D.Double(scrCoordManipStartX+125*points.get(1)*Math.cos(points.get(0)),
+                        scrCoordManipStartY+125*points.get(1)*Math.sin(points.get(0))));
 
         for(int i = 0; i < obstacles.size(); i++) {
             distToObstacles.add(firstRod.ptSegDist(obstacles.get(i)) - 25);
@@ -467,11 +485,11 @@ public class GlobalSearch {
     private ArrayList<Double> secondRodDistToObstacles(ArrayList<Double> points, ArrayList<Point2D> obstacles) {
         ArrayList<Double> distToObstacles = new ArrayList<Double>();
         Line2D secondRod = new Line2D.Double(
-                new Point2D.Double(SCR_COORD_MANIP_START_X+125*points.get(1)*Math.cos(points.get(0)),
-                        SCR_COORD_MANIP_START_Y+125*points.get(1)*Math.sin(points.get(0))),
-                new Point2D.Double(SCR_COORD_MANIP_START_X+125*points.get(1)*Math.cos(points.get(0))+
+                new Point2D.Double(scrCoordManipStartX+125*points.get(1)*Math.cos(points.get(0)),
+                        scrCoordManipStartY+125*points.get(1)*Math.sin(points.get(0))),
+                new Point2D.Double(scrCoordManipStartX+125*points.get(1)*Math.cos(points.get(0))+
                         125*points.get(3)*Math.cos(points.get(0)+points.get(2)),
-                        SCR_COORD_MANIP_START_Y+125*points.get(1)*Math.sin(points.get(0))+
+                        scrCoordManipStartY+125*points.get(1)*Math.sin(points.get(0))+
                                 125*points.get(3)*Math.sin(points.get(0)+points.get(2))));
 
         for(int i = 0; i < obstacles.size(); i++) {
@@ -483,14 +501,14 @@ public class GlobalSearch {
     private ArrayList<Double>thirdRodDistToObstacles(ArrayList<Double> points, ArrayList<Point2D> obstacles) {
         ArrayList<Double> distToObstacles = new ArrayList<Double>();
         Line2D thirdRod = new Line2D.Double(
-                new Point2D.Double(SCR_COORD_MANIP_START_X+125*points.get(1)*Math.cos(points.get(0))+
+                new Point2D.Double(scrCoordManipStartX+125*points.get(1)*Math.cos(points.get(0))+
                         125*points.get(3)*Math.cos(points.get(0)+points.get(2)),
-                        SCR_COORD_MANIP_START_Y+125*points.get(1)*Math.sin(points.get(0))+
+                        scrCoordManipStartY+125*points.get(1)*Math.sin(points.get(0))+
                                 125*points.get(3)*Math.sin(points.get(0)+points.get(2))),
-                new Point2D.Double(SCR_COORD_MANIP_START_X+125*points.get(1)*Math.cos(points.get(0))+
+                new Point2D.Double(scrCoordManipStartX+125*points.get(1)*Math.cos(points.get(0))+
                         125*points.get(3)*Math.cos(points.get(0)+points.get(2))+
                         125*points.get(5)*Math.cos(points.get(0)+points.get(2)+points.get(4)),
-                        SCR_COORD_MANIP_START_Y+125*points.get(1)*Math.sin(points.get(0))+
+                        scrCoordManipStartY+125*points.get(1)*Math.sin(points.get(0))+
                                 125*points.get(3)*Math.sin(points.get(0)+points.get(2))+
                                 125*points.get(5)*Math.sin(points.get(0)+points.get(2)+points.get(4))));
         for(int i = 0; i < obstacles.size(); i++) {
@@ -562,13 +580,13 @@ public class GlobalSearch {
 
     private void calculate_u(ArrayList<Double> points,
                              int numberOfVariable, ArrayList<Point2D> obstacles) throws Exception{
-        for(int i = 0; i < 5; i++) {
+        for(int i = 1; i < I.size(); i++) {
             ArrayList<Integer> Iv = new ArrayList<Integer>(I.get(i));
             if(Iv.size() >= 2) {
                 double temp_u = calculateTemp_u(1, 0, i, Iv, points, numberOfVariable, obstacles);
                 for (int j = 1; j < Iv.size(); j++) {
                     for(int k = j + 1; k < Iv.size(); k++)
-                    temp_u = Math.max(calculateTemp_u(k, j, i, Iv, points, numberOfVariable, obstacles), temp_u);
+                        temp_u = Math.max(calculateTemp_u(k, j, i, Iv, points, numberOfVariable, obstacles), temp_u);
                 }
                 if(temp_u > 0) {
                     u.set(i, temp_u);
@@ -581,11 +599,6 @@ public class GlobalSearch {
                 u.set(i, 1.0);
             }
         }
-        // удалить чтобы было как по книжке(не работат если убрать)
-        /*for(int i = 0; i < 5; i++) {
-            u.set(i, u.get(4));
-        }*/
-
         /*for(int i = 0; i < 5; i++) {
             ArrayList<Integer> Iv = new ArrayList<Integer>(I.get(i));
             if(Iv.size() >= 2) {
@@ -605,21 +618,25 @@ public class GlobalSearch {
             }
         }*/
     }
-
+    // ЕСЛИ НЕ БУДЕТ РАБОТАТЬ, ТО ПРОВЕРИТЬ ПРАВИЛЬНОСТЬ ЭТОЙ ФУКЦИИ
     public double calcGv(double variable, int _v, ArrayList<Double> points,
                          int numberOfVariable, ArrayList<Point2D> obstacles) {
         ArrayList<Double> pointsCopy = copyPoints(points);
         pointsCopy.set(numberOfVariable, variable);
 
         switch(_v) {
-            case 2: {
+            case 1: {
                 return -sumArrayListElem(firstRodDistToObstacles(pointsCopy, obstacles));
             }
-            case 3: {
+            case 2: {
                 return -sumArrayListElem(secondRodDistToObstacles(pointsCopy, obstacles));
             }
-            case 4: {
-                return -sumArrayListElem(thirdRodDistToObstacles(pointsCopy, obstacles));
+            case 3: {
+                for(int i = 0; i < analysis.size(); i++) {
+                    if(analysis.get(i).getKey() == variable) {
+                        return analysis.get(i).getValue();
+                    }
+                }
             }
             default: {
                 return 0.0;
@@ -634,11 +651,10 @@ public class GlobalSearch {
 
         double Xi = analysis.get(Iv.get(indexI)).getKey();
         double Xj = analysis.get(Iv.get(indexJ)).getKey();
-        // поменять на 2 нижних, чтобы было как по алгоритму
-        //double Zi = calcGv(analysis.get(Iv.get(indexI)).getKey(), _v, points, numberOfVariable, obstacles);
-        //double Zj = calcGv(analysis.get(Iv.get(indexJ)).getKey(), _v, points, numberOfVariable, obstacles);
-        double Zi = analysis.get(Iv.get(indexI)).getValue();
-        double Zj = analysis.get(Iv.get(indexJ)).getValue();
+        double Zi = calcGv(analysis.get(Iv.get(indexI)).getKey(), _v, points, numberOfVariable, obstacles);
+        double Zj = calcGv(analysis.get(Iv.get(indexJ)).getKey(), _v, points, numberOfVariable, obstacles);
+        //double Zi = analysis.get(Iv.get(indexI)).getValue();
+        //double Zj = analysis.get(Iv.get(indexJ)).getValue();
 
         return Math.abs(Zi - Zj) / (Xi - Xj);
     }
