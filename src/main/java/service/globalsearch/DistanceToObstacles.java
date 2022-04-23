@@ -1,6 +1,5 @@
 package service.globalsearch;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
@@ -10,10 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static service.utils.StringConstants.OBSTACLE_RADIUS;
-import static service.utils.StringConstants.ROG_LENGTH;
-import static service.utils.StringConstants.SCR_COORD_MANIP_START_X;
-import static service.utils.StringConstants.SCR_COORD_MANIP_START_Y;
+import static service.utils.Constants.OBSTACLE_RADIUS;
+import static service.utils.Constants.ROG_LENGTH;
+import static service.utils.Constants.SCR_COORD_MANIP_START_X;
+import static service.utils.Constants.SCR_COORD_MANIP_START_Y;
 
 @RequiredArgsConstructor
 @Setter

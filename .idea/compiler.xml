@@ -7,7 +7,6 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="Robot_manipulator" />
-        <module name="Manipulator" />
       </profile>
     </annotationProcessing>
   </component>

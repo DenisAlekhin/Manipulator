@@ -8,10 +8,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static service.utils.StringConstants.OBSTACLE_RADIUS;
-import static service.utils.StringConstants.ROG_LENGTH;
-import static service.utils.StringConstants.SCR_COORD_MANIP_START_X;
-import static service.utils.StringConstants.SCR_COORD_MANIP_START_Y;
+import static service.utils.Constants.OBSTACLE_RADIUS;
+import static service.utils.Constants.ROG_LENGTH;
+import static service.utils.Constants.SCR_COORD_MANIP_START_X;
+import static service.utils.Constants.SCR_COORD_MANIP_START_Y;
 
 public class DistanceToObstaclesTest {
 

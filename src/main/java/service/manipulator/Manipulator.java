@@ -27,12 +27,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import static service.utils.StringConstants.FRAME_START_X;
-import static service.utils.StringConstants.FRAME_START_Y;
-import static service.utils.StringConstants.MANIP_START_X;
-import static service.utils.StringConstants.MANIP_START_Y;
-import static service.utils.StringConstants.OBSTACLE_RADIUS;
-import static service.utils.StringConstants.ROG_LENGTH;
+import static service.utils.Constants.FRAME_START_X;
+import static service.utils.Constants.FRAME_START_Y;
+import static service.utils.Constants.MANIP_START_X;
+import static service.utils.Constants.MANIP_START_Y;
+import static service.utils.Constants.OBSTACLE_RADIUS;
+import static service.utils.Constants.ROG_LENGTH;
 
 public class Manipulator extends JPanel implements MouseListener{
     final double R = 3;
@@ -241,15 +241,17 @@ public class Manipulator extends JPanel implements MouseListener{
         String x2 = Double.toString(targetPoint.getX());
         String y2 = Double.toString(targetPoint.getY());
         if(onlyHingesMoves) {
-            String x1 = "(" + MANIP_START_X + "+125*" + ((Rod)mechanism.get(1)).getCompression() +
-                    "*cos(x0)+125*" + ((Rod)mechanism.get(3)).getCompression() + "*cos(x0+x1))";
-            String y1 = "(" + MANIP_START_Y + "+125*" + ((Rod)mechanism.get(1)).getCompression() +
-                    "*sin(x0)+125*" + ((Rod)mechanism.get(3)).getCompression() + "*sin(x0+x1))";
+            String x1 = "(" + MANIP_START_X + "+" + ROG_LENGTH + "*" + ((Rod)mechanism.get(1)).getCompression() +
+                    "*cos(x0)+" + ROG_LENGTH + "*" + ((Rod)mechanism.get(3)).getCompression() + "*cos(x0+x1))";
+            String y1 = "(" + MANIP_START_Y + "+" + ROG_LENGTH + "*" + ((Rod)mechanism.get(1)).getCompression() +
+                    "*sin(x0)+" + ROG_LENGTH + "*" + ((Rod)mechanism.get(3)).getCompression() + "*sin(x0+x1))";
+//            System.out.println("sqrt((" + x2 + "-" + x1 + ")*" + "(" + x2 + "-" + x1 + ")+"
+//                    + "(" + y2 + "-" + y1 + ")*" + "(" + y2 + "-" + y1 + "))");
             return "sqrt((" + x2 + "-" + x1 + ")*" + "(" + x2 + "-" + x1 + ")+"
                     + "(" + y2 + "-" + y1 + ")*" + "(" + y2 + "-" + y1 + "))";
         } else {
-            String x1 = "(" + MANIP_START_X + "+125*x1*cos(x0)+125*x3*cos(x0+x2))";
-            String y1 = "(" + MANIP_START_Y + "+125*x1*sin(x0)+125*x3*sin(x0+x2))";
+            String x1 = "(" + MANIP_START_X + "+" + ROG_LENGTH + "*x1*cos(x0)+" + ROG_LENGTH + "*x3*cos(x0+x2))";
+            String y1 = "(" + MANIP_START_Y + "+" + ROG_LENGTH + "*x1*sin(x0)+" + ROG_LENGTH + "*x3*sin(x0+x2))";
             return "sqrt((" + x2 + "-" + x1 + ")*" + "(" + x2 + "-" + x1 + ")+"
                     + "(" + y2 + "-" + y1 + ")*" + "(" + y2 + "-" + y1 + "))";
         }
@@ -299,6 +301,7 @@ public class Manipulator extends JPanel implements MouseListener{
         List<Double> result = null;
         try {
             result = globalSearch.findMinimum(true, obstacles);
+//            result = MultidimensionalGlobalSearchLib.findMinimum(targetPoint.getX(), targetPoint.getY());
             moveManipulator(result, onlyHingesMoves);
             setTwoLastElements();
             repaint();

@@ -4,6 +4,7 @@ import javafx.util.Pair;
 import lombok.RequiredArgsConstructor;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
+import service.Iterations;
 import service.exceptions.NoSolutionExceptions;
 
 import java.awt.geom.Point2D;
@@ -28,6 +29,7 @@ public class MultidimensionalGlobalSearch {
     private List<Double> variables;
 
     public List<Double> findMinimum(boolean withLimitations, ArrayList<Point2D> obstacles){
+        Iterations.reset();
         setUp(withLimitations, obstacles);
         if(withLimitations) {
             while(!oneDimensionalGlobalSearchesWithLimitations.get(1).isLastIteration()){
@@ -53,9 +55,7 @@ public class MultidimensionalGlobalSearch {
                     e.printStackTrace();
                 }
             }
-            for(int i = 0; i < analysis.size(); i++) {
-                System.out.println(i + ": " + analysis.get(i));
-            }
+            System.out.println(Iterations.get());
 
             return getResultWithLimitations(obstacles);
         } else {

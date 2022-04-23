@@ -2,6 +2,7 @@ package service.globalsearch;
 
 import javafx.util.Pair;
 import net.objecthunter.exp4j.Expression;
+import service.Iterations;
 import service.exceptions.NoSolutionExceptions;
 
 import java.util.ArrayList;
@@ -54,6 +55,7 @@ public class OneDimensionalGlobalSearchWithLimitations {
                 newPointCorrespondLimitations = distanceToObstacles.pointCorrespondLimitations(analysis.get(analysis.size() - 1).getKey());
             }
             isLastIteration = Math.abs(analysis.get(t).getKey() - analysis.get(t - 1).getKey()) < E;
+            Iterations.add(1);
         } while (!(isLastIteration || oneIteration) || !newPointCorrespondLimitations);
 
         if(oneIteration) {

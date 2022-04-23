@@ -7,6 +7,8 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.*;
 
+import static service.utils.Constants.ROG_LENGTH;
+
 public class GlobalSearch {
     private final Expression function;
     private final ArrayList<Double> a, b;
@@ -473,8 +475,8 @@ public class GlobalSearch {
         ArrayList<Double> distToObstacles = new ArrayList<Double>();
         Line2D firstRod = new Line2D.Double(
                 new Point2D.Double(scrCoordManipStartX,scrCoordManipStartY),
-                new Point2D.Double(scrCoordManipStartX+125*points.get(1)*Math.cos(points.get(0)),
-                        scrCoordManipStartY+125*points.get(1)*Math.sin(points.get(0))));
+                new Point2D.Double(scrCoordManipStartX+ROG_LENGTH*points.get(1)*Math.cos(points.get(0)),
+                        scrCoordManipStartY+ROG_LENGTH*points.get(1)*Math.sin(points.get(0))));
 
         for(int i = 0; i < obstacles.size(); i++) {
             distToObstacles.add(firstRod.ptSegDist(obstacles.get(i)) - 25);
@@ -485,12 +487,12 @@ public class GlobalSearch {
     private ArrayList<Double> secondRodDistToObstacles(ArrayList<Double> points, ArrayList<Point2D> obstacles) {
         ArrayList<Double> distToObstacles = new ArrayList<Double>();
         Line2D secondRod = new Line2D.Double(
-                new Point2D.Double(scrCoordManipStartX+125*points.get(1)*Math.cos(points.get(0)),
-                        scrCoordManipStartY+125*points.get(1)*Math.sin(points.get(0))),
-                new Point2D.Double(scrCoordManipStartX+125*points.get(1)*Math.cos(points.get(0))+
-                        125*points.get(3)*Math.cos(points.get(0)+points.get(2)),
-                        scrCoordManipStartY+125*points.get(1)*Math.sin(points.get(0))+
-                                125*points.get(3)*Math.sin(points.get(0)+points.get(2))));
+                new Point2D.Double(scrCoordManipStartX+ROG_LENGTH*points.get(1)*Math.cos(points.get(0)),
+                        scrCoordManipStartY+ROG_LENGTH*points.get(1)*Math.sin(points.get(0))),
+                new Point2D.Double(scrCoordManipStartX+ROG_LENGTH*points.get(1)*Math.cos(points.get(0))+
+                        ROG_LENGTH*points.get(3)*Math.cos(points.get(0)+points.get(2)),
+                        scrCoordManipStartY+ROG_LENGTH*points.get(1)*Math.sin(points.get(0))+
+                                ROG_LENGTH*points.get(3)*Math.sin(points.get(0)+points.get(2))));
 
         for(int i = 0; i < obstacles.size(); i++) {
             distToObstacles.add(secondRod.ptSegDist(obstacles.get(i)) - 25);
@@ -501,16 +503,16 @@ public class GlobalSearch {
     private ArrayList<Double>thirdRodDistToObstacles(ArrayList<Double> points, ArrayList<Point2D> obstacles) {
         ArrayList<Double> distToObstacles = new ArrayList<Double>();
         Line2D thirdRod = new Line2D.Double(
-                new Point2D.Double(scrCoordManipStartX+125*points.get(1)*Math.cos(points.get(0))+
-                        125*points.get(3)*Math.cos(points.get(0)+points.get(2)),
-                        scrCoordManipStartY+125*points.get(1)*Math.sin(points.get(0))+
-                                125*points.get(3)*Math.sin(points.get(0)+points.get(2))),
-                new Point2D.Double(scrCoordManipStartX+125*points.get(1)*Math.cos(points.get(0))+
-                        125*points.get(3)*Math.cos(points.get(0)+points.get(2))+
-                        125*points.get(5)*Math.cos(points.get(0)+points.get(2)+points.get(4)),
-                        scrCoordManipStartY+125*points.get(1)*Math.sin(points.get(0))+
-                                125*points.get(3)*Math.sin(points.get(0)+points.get(2))+
-                                125*points.get(5)*Math.sin(points.get(0)+points.get(2)+points.get(4))));
+                new Point2D.Double(scrCoordManipStartX+ROG_LENGTH*points.get(1)*Math.cos(points.get(0))+
+                        ROG_LENGTH*points.get(3)*Math.cos(points.get(0)+points.get(2)),
+                        scrCoordManipStartY+ROG_LENGTH*points.get(1)*Math.sin(points.get(0))+
+                                ROG_LENGTH*points.get(3)*Math.sin(points.get(0)+points.get(2))),
+                new Point2D.Double(scrCoordManipStartX+ROG_LENGTH*points.get(1)*Math.cos(points.get(0))+
+                        ROG_LENGTH*points.get(3)*Math.cos(points.get(0)+points.get(2))+
+                        ROG_LENGTH*points.get(5)*Math.cos(points.get(0)+points.get(2)+points.get(4)),
+                        scrCoordManipStartY+ROG_LENGTH*points.get(1)*Math.sin(points.get(0))+
+                                ROG_LENGTH*points.get(3)*Math.sin(points.get(0)+points.get(2))+
+                                ROG_LENGTH*points.get(5)*Math.sin(points.get(0)+points.get(2)+points.get(4))));
         for(int i = 0; i < obstacles.size(); i++) {
             distToObstacles.add(thirdRod.ptSegDist(obstacles.get(i)) - 25);
         }
