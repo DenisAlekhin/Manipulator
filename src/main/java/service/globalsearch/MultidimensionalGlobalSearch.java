@@ -2,6 +2,7 @@ package service.globalsearch;
 
 import javafx.util.Pair;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import service.Iterations;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
+@Slf4j
 public class MultidimensionalGlobalSearch {
     private final Expression FUNC;
     private final String FUNC_STR;
@@ -55,7 +57,7 @@ public class MultidimensionalGlobalSearch {
                     e.printStackTrace();
                 }
             }
-            System.out.println(Iterations.get());
+            log.info("Execution of the algorithm  took {} iterations", Iterations.get());
 
             return getResultWithLimitations(obstacles);
         } else {

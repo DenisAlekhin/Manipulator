@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2022-04-23T11:29:26.740504600Z</date>
+  <millis>1650713366740</millis>
+  <nanos>504600</nanos>
+  <sequence>0</sequence>
+  <logger>org.uma.jmetal.util.JMetalLogger</logger>
+  <level>INFO</level>
+  <class>org.uma.jmetal.util.JMetalLogger</class>
+  <method>configureLoggers</method>
+  <thread>18</thread>
+  <message>Loggers configured with null</message>
+</record>
+<record>
+  <date>2022-04-23T11:29:26.776407900Z</date>
+  <millis>1650713366776</millis>
+  <nanos>407900</nanos>
+  <sequence>1</sequence>
+  <logger>org.uma.jmetal.util.JMetalLogger</logger>
+  <level>INFO</level>
+  <class>service.globalsearch.MultidimensionalGlobalSearchLib</class>
+  <method>findMinimumJmetal</method>
+  <thread>18</thread>
+  <message>Total execution time: 960ms</message>
+</record>
+<record>
+  <date>2022-04-23T11:29:29.844439800Z</date>
+  <millis>1650713369844</millis>
+  <nanos>439800</nanos>
+  <sequence>2</sequence>
+  <logger>org.uma.jmetal.util.JMetalLogger</logger>
+  <level>INFO</level>
+  <class>service.globalsearch.MultidimensionalGlobalSearchLib</class>
+  <method>findMinimumJmetal</method>
+  <thread>18</thread>
+  <message>Total execution time: 519ms</message>
+</record>
+<record>
+  <date>2022-04-23T11:29:33.006392400Z</date>
+  <millis>1650713373006</millis>
+  <nanos>392400</nanos>
+  <sequence>3</sequence>
+  <logger>org.uma.jmetal.util.JMetalLogger</logger>
+  <level>INFO</level>
+  <class>service.globalsearch.MultidimensionalGlobalSearchLib</class>
+  <method>findMinimumJmetal</method>
+  <thread>18</thread>
+  <message>Total execution time: 523ms</message>
+</record>
+<record>
+  <date>2022-04-23T11:29:36.851562300Z</date>
+  <millis>1650713376851</millis>
+  <nanos>562300</nanos>
+  <sequence>4</sequence>
+  <logger>org.uma.jmetal.util.JMetalLogger</logger>
+  <level>INFO</level>
+  <class>service.globalsearch.MultidimensionalGlobalSearchLib</class>
+  <method>findMinimumJmetal</method>
+  <thread>18</thread>
+  <message>Total execution time: 460ms</message>
+</record>

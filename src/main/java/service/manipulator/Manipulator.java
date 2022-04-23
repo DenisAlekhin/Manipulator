@@ -1,9 +1,12 @@
 package service.manipulator;
 
+import lombok.extern.slf4j.Slf4j;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
+import org.apache.log4j.BasicConfigurator;
 import service.exceptions.NoSolutionExceptions;
 import service.globalsearch.MultidimensionalGlobalSearch;
+import service.globalsearch.MultidimensionalGlobalSearchLib;
 import service.manipulator.elements.Element;
 import service.manipulator.elements.Hinge;
 import service.manipulator.elements.Rod;
@@ -34,6 +37,7 @@ import static service.utils.Constants.MANIP_START_Y;
 import static service.utils.Constants.OBSTACLE_RADIUS;
 import static service.utils.Constants.ROG_LENGTH;
 
+@Slf4j
 public class Manipulator extends JPanel implements MouseListener{
     final double R = 3;
     final double EPSILON = 0.01;
@@ -49,6 +53,7 @@ public class Manipulator extends JPanel implements MouseListener{
     Timer timer;
 
     {
+        BasicConfigurator.configure();
         targetConstruction.add(new Hinge(0, -1));
         targetConstruction.add(new Rod(1, -1));
     }
@@ -299,9 +304,15 @@ public class Manipulator extends JPanel implements MouseListener{
     public void setToTarget(boolean onlyHingesMoves) {
         MultidimensionalGlobalSearch globalSearch = setUpGlobalSearch(onlyHingesMoves);
         List<Double> result = null;
+        String functionStr = buildFunctionStr(onlyHingesMoves);
         try {
+
+
             result = globalSearch.findMinimum(true, obstacles);
 //            result = MultidimensionalGlobalSearchLib.findMinimum(targetPoint.getX(), targetPoint.getY());
+//            result = MultidimensionalGlobalSearchLib.findMinimumJmetal(targetPoint.getX(), targetPoint.getY(), buildExpression(functionStr, onlyHingesMoves));
+
+
             moveManipulator(result, onlyHingesMoves);
             setTwoLastElements();
             repaint();
@@ -332,17 +343,8 @@ public class Manipulator extends JPanel implements MouseListener{
     }
 
     private void printResult(List<Double> result) {
-
-        DecimalFormat df = new DecimalFormat("#.#");
-        System.out.print("Result: (");
-        for(int i = 0; i < result.size(); i++) {
-            System.out.print(df.format(result.get(i)));
-            if(i != result.size() - 1) {
-                System.out.print(",");
-            } else {
-                System.out.print(")\n");
-            }
-        }
+        DecimalFormat df = new DecimalFormat("#.###");
+        log.info("The distance to the target point is {}", df.format(result.get(2)));
     }
 
     private void printAlgorithmStep(int k, ArrayList<Double> step) {
