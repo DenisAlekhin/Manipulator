@@ -311,8 +311,8 @@ public class Manipulator extends JPanel implements MouseListener{
 
 
 //            result = globalSearch.findMinimum(true, obstacles);
-//            result = MultidimensionalGlobalSearchLib.findMinimum(targetPoint.getX(), targetPoint.getY());
-            result = MultidimensionalGlobalSearchLib.findMinimumJmetal(targetPoint.getX(), targetPoint.getY(), buildExpression(functionStr, onlyHingesMoves));
+            result = globalSearch.findMinimumLocal(targetPoint.getX(), targetPoint.getY(), buildExpression(functionStr, onlyHingesMoves));
+//            result = MultidimensionalGlobalSearchLib.findMinimumJmetal(targetPoint.getX(), targetPoint.getY(), buildExpression(functionStr, onlyHingesMoves));
 
 
             moveManipulator(result, onlyHingesMoves);

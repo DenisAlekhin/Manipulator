@@ -1,6 +1,7 @@
 package service.globalsearch;
 
 import javafx.util.Pair;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.objecthunter.exp4j.Expression;
@@ -22,7 +23,9 @@ public class MultidimensionalGlobalSearch {
     private final Expression FUNC;
     private final String FUNC_STR;
     private final List<Double> A, B;
-    private final Double R, E;
+    private final Double R;
+    @NonNull
+    private Double E;
     private Integer variablesCount;
     private Map<Integer, String> variableNames;
     private final List<List<Double>> analysis = new ArrayList<>();
@@ -58,7 +61,6 @@ public class MultidimensionalGlobalSearch {
                 }
             }
             log.info("Execution of the algorithm took {} iterations", Iterations.get());
-
 
             return getResultWithLimitations(obstacles);
         } else {
@@ -136,5 +138,12 @@ public class MultidimensionalGlobalSearch {
 
     private List<Double> getResult() {
         return analysis.stream().min(Comparator.comparingDouble(v -> v.get(v.size() - 1))).orElseThrow(() -> new NoSolutionExceptions("Error: нет решения"));
+    }
+
+    public List<Double> findMinimumLocal(double target_x, double target_y, Expression func) {
+        Iterations.reset();
+        E = 0.1;
+        List<Double> assumption = findMinimum(true, new ArrayList<>());
+        return MultidimensionalGlobalSearchLib.findMinimumNelderMead(target_x, target_y, func, assumption);
     }
 }
