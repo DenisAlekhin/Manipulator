@@ -2,62 +2,62 @@
 <!DOCTYPE log SYSTEM "logger.dtd">
 <log>
 <record>
-  <date>2022-04-23T11:29:26.740504600Z</date>
-  <millis>1650713366740</millis>
-  <nanos>504600</nanos>
+  <date>2022-04-25T10:37:48.626070300Z</date>
+  <millis>1650883068626</millis>
+  <nanos>70300</nanos>
   <sequence>0</sequence>
   <logger>org.uma.jmetal.util.JMetalLogger</logger>
   <level>INFO</level>
   <class>org.uma.jmetal.util.JMetalLogger</class>
   <method>configureLoggers</method>
-  <thread>18</thread>
+  <thread>19</thread>
   <message>Loggers configured with null</message>
 </record>
 <record>
-  <date>2022-04-23T11:29:26.776407900Z</date>
-  <millis>1650713366776</millis>
-  <nanos>407900</nanos>
+  <date>2022-04-25T10:37:48.673068300Z</date>
+  <millis>1650883068673</millis>
+  <nanos>68300</nanos>
   <sequence>1</sequence>
   <logger>org.uma.jmetal.util.JMetalLogger</logger>
   <level>INFO</level>
   <class>service.globalsearch.MultidimensionalGlobalSearchLib</class>
   <method>findMinimumJmetal</method>
-  <thread>18</thread>
-  <message>Total execution time: 960ms</message>
+  <thread>19</thread>
+  <message>Total execution time: 752ms</message>
 </record>
 <record>
-  <date>2022-04-23T11:29:29.844439800Z</date>
-  <millis>1650713369844</millis>
-  <nanos>439800</nanos>
+  <date>2022-04-25T10:37:52.684358500Z</date>
+  <millis>1650883072684</millis>
+  <nanos>358500</nanos>
   <sequence>2</sequence>
   <logger>org.uma.jmetal.util.JMetalLogger</logger>
   <level>INFO</level>
   <class>service.globalsearch.MultidimensionalGlobalSearchLib</class>
   <method>findMinimumJmetal</method>
-  <thread>18</thread>
-  <message>Total execution time: 519ms</message>
+  <thread>19</thread>
+  <message>Total execution time: 255ms</message>
 </record>
 <record>
-  <date>2022-04-23T11:29:33.006392400Z</date>
-  <millis>1650713373006</millis>
-  <nanos>392400</nanos>
+  <date>2022-04-25T10:37:54.898138300Z</date>
+  <millis>1650883074898</millis>
+  <nanos>138300</nanos>
   <sequence>3</sequence>
   <logger>org.uma.jmetal.util.JMetalLogger</logger>
   <level>INFO</level>
   <class>service.globalsearch.MultidimensionalGlobalSearchLib</class>
   <method>findMinimumJmetal</method>
-  <thread>18</thread>
-  <message>Total execution time: 523ms</message>
+  <thread>19</thread>
+  <message>Total execution time: 213ms</message>
 </record>
 <record>
-  <date>2022-04-23T11:29:36.851562300Z</date>
-  <millis>1650713376851</millis>
-  <nanos>562300</nanos>
+  <date>2022-04-25T10:37:56.713093800Z</date>
+  <millis>1650883076713</millis>
+  <nanos>93800</nanos>
   <sequence>4</sequence>
   <logger>org.uma.jmetal.util.JMetalLogger</logger>
   <level>INFO</level>
   <class>service.globalsearch.MultidimensionalGlobalSearchLib</class>
   <method>findMinimumJmetal</method>
-  <thread>18</thread>
-  <message>Total execution time: 460ms</message>
+  <thread>19</thread>
+  <message>Total execution time: 216ms</message>
 </record>

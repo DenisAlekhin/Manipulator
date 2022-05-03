@@ -308,8 +308,8 @@ public class Manipulator extends JPanel implements MouseListener{
         try {
 
 
-            result = globalSearch.findMinimum(true, obstacles);
-//            result = MultidimensionalGlobalSearchLib.findMinimum(targetPoint.getX(), targetPoint.getY());
+//            result = globalSearch.findMinimum(true, obstacles);
+            result = MultidimensionalGlobalSearchLib.findMinimumBFGS(targetPoint.getX(), targetPoint.getY());
 //            result = MultidimensionalGlobalSearchLib.findMinimumJmetal(targetPoint.getX(), targetPoint.getY(), buildExpression(functionStr, onlyHingesMoves));
 
 

@@ -1,8 +1,14 @@
 package service.globalsearch;
 
+import jsat.linear.ConcatenatedVec;
+import jsat.linear.DenseVector;
+import jsat.linear.Vec;
+import jsat.math.Function;
+import jsat.math.FunctionBase;
+import jsat.math.optimization.BFGS;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.objecthunter.exp4j.Expression;
-import org.apache.log4j.BasicConfigurator;
 import org.uma.jmetal.algorithm.Algorithm;
 import org.uma.jmetal.algorithm.multiobjective.nsgaii.NSGAIIBuilder;
 import org.uma.jmetal.operator.CrossoverOperator;
@@ -17,8 +23,6 @@ import org.uma.jmetal.util.AlgorithmRunner;
 import org.uma.jmetal.util.JMetalLogger;
 import org.uma.jmetal.util.comparator.RankingAndCrowdingDistanceComparator;
 import service.globalsearch.jmetal.CustomProblem;
-import smile.math.BFGS;
-import smile.math.DifferentiableMultivariateFunction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,31 +31,29 @@ import java.util.List;
 import static service.utils.Constants.ROG_LENGTH;
 
 @RequiredArgsConstructor
+@Slf4j
 public class MultidimensionalGlobalSearchLib {
-    public static List<Double> findMinimumBFGS(double target_x, double target_y){
-        BasicConfigurator.configure();
-        DifferentiableMultivariateFunction func = new DifferentiableMultivariateFunction() {
-            @Override
-            public double g(double[] doubles, double[] doubles1) {
-                return Math.sqrt((target_x-(75+ROG_LENGTH*1.0*Math.cos(doubles[0])+ROG_LENGTH*1.0*Math.cos(doubles[0]+doubles[1])))
-                        *(target_x-(75+ROG_LENGTH*1.0*Math.cos(doubles[0])+ROG_LENGTH*1.0*Math.cos(doubles[0]+doubles[1])))
-                        +(target_y-(ROG_LENGTH+ROG_LENGTH *1.0*Math.sin(doubles[0])+ROG_LENGTH *1.0*Math.sin(doubles[0]+doubles[1])))
-                        *(target_y-(ROG_LENGTH +ROG_LENGTH *1.0*Math.sin(doubles[0])+ROG_LENGTH *1.0*Math.sin(doubles[0]+doubles[1]))));
-            }
-
-            @Override
-            public double f(double[] doubles) {
-                return Math.sqrt((target_x-(75+ROG_LENGTH *1.0*Math.cos(doubles[0])+ROG_LENGTH *1.0*Math.cos(doubles[0]+doubles[1])))
-                        *(target_x-(75+ROG_LENGTH *1.0*Math.cos(doubles[0])+ROG_LENGTH *1.0*Math.cos(doubles[0]+doubles[1])))
-                        +(target_y-(ROG_LENGTH +ROG_LENGTH *1.0*Math.sin(doubles[0])+ROG_LENGTH *1.0*Math.sin(doubles[0]+doubles[1])))
-                        *(target_y-(ROG_LENGTH +ROG_LENGTH *1.0*Math.sin(doubles[0])+ROG_LENGTH *1.0*Math.sin(doubles[0]+doubles[1]))));
-            }
-        };
-        double[] x = new double[2];
-
-        double res = BFGS.minimize(func, x, 0.0001, 200);
-        return new ArrayList<>(Arrays.asList(x[0], x[1], res));
-    }
+//    public static List<Double> findMinimumBFGS(double target_x, double target_y){
+//        BasicConfigurator.configure();
+//        DifferentiableMultivariateFunction func = new DifferentiableMultivariateFunction() {
+//            @Override
+//            public double g(double[] doubles, double[] doubles1) {
+//                return 0.0;
+//            }
+//
+//            @Override
+//            public double f(double[] doubles) {
+//                return Math.sqrt((target_x-(75+ROG_LENGTH *1.0*Math.cos(doubles[0])+ROG_LENGTH *1.0*Math.cos(doubles[0]+doubles[1])))
+//                        *(target_x-(75+ROG_LENGTH *1.0*Math.cos(doubles[0])+ROG_LENGTH *1.0*Math.cos(doubles[0]+doubles[1])))
+//                        +(target_y-(ROG_LENGTH +ROG_LENGTH *1.0*Math.sin(doubles[0])+ROG_LENGTH *1.0*Math.sin(doubles[0]+doubles[1])))
+//                        *(target_y-(ROG_LENGTH +ROG_LENGTH *1.0*Math.sin(doubles[0])+ROG_LENGTH *1.0*Math.sin(doubles[0]+doubles[1]))));
+//            }
+//        };
+//        double[] x = new double[2];
+//
+//        double res = BFGS.minimize(func, x, 0.0001, 200);
+//        return new ArrayList<>(Arrays.asList(x[0], x[1], res));
+//    }
 
     public static List<Double> findMinimumJmetal(double target_x, double target_y, Expression func){
         //Define the optimization problem
@@ -87,5 +89,47 @@ public class MultidimensionalGlobalSearchLib {
         func.setVariable("x1", x1);
 
         return new ArrayList<>(Arrays.asList(x0, x1, func.evaluate()));
+    }
+
+    public static List<Double> findMinimumBFGS(double target_x, double target_y){
+//        BasicConfigurator.configure();
+//        DifferentiableMultivariateFunction func = new DifferentiableMultivariateFunction() {
+//            @Override
+//            public double g(double[] doubles, double[] doubles1) {
+//                return 0.0;
+//            }
+//
+//            @Override
+//            public double f(double[] doubles) {
+//                return Math.sqrt((target_x-(75+ROG_LENGTH *1.0*Math.cos(doubles[0])+ROG_LENGTH *1.0*Math.cos(doubles[0]+doubles[1])))
+//                        *(target_x-(75+ROG_LENGTH *1.0*Math.cos(doubles[0])+ROG_LENGTH *1.0*Math.cos(doubles[0]+doubles[1])))
+//                        +(target_y-(ROG_LENGTH +ROG_LENGTH *1.0*Math.sin(doubles[0])+ROG_LENGTH *1.0*Math.sin(doubles[0]+doubles[1])))
+//                        *(target_y-(ROG_LENGTH +ROG_LENGTH *1.0*Math.sin(doubles[0])+ROG_LENGTH *1.0*Math.sin(doubles[0]+doubles[1]))));
+//            }
+//        };
+//        double[] x = new double[2];
+//
+//        double res = BFGS.minimize(func, x, 0.0001, 200);
+//        return new ArrayList<>(Arrays.asList(x[0], x[1], res));
+
+        BFGS bfgs = new BFGS();
+
+        Function func = new FunctionBase() {
+            @Override
+            public double f(Vec vec) {
+                return Math.sqrt((target_x-(75+ROG_LENGTH *1.0*Math.cos(vec.get(0))+ROG_LENGTH *1.0*Math.cos(vec.get(0)+vec.get(1))))
+                        *(target_x-(75+ROG_LENGTH *1.0*Math.cos(vec.get(0))+ROG_LENGTH *1.0*Math.cos(vec.get(0)+vec.get(1))))
+                        +(target_y-(ROG_LENGTH +ROG_LENGTH *1.0*Math.sin(vec.get(0))+ROG_LENGTH *1.0*Math.sin(vec.get(0)+vec.get(1))))
+                        *(target_y-(ROG_LENGTH +ROG_LENGTH *1.0*Math.sin(vec.get(0))+ROG_LENGTH *1.0*Math.sin(vec.get(0)+vec.get(1)))));
+            }
+        };
+        double[] x = new double[2];
+        Vec res = new DenseVector(2);
+        Vec assumption = new DenseVector(2);
+
+        bfgs.optimize(1e-4, res, assumption, func, null, null);
+
+        log.info(res.toString());
+        return new ArrayList<>();
     }
 }
