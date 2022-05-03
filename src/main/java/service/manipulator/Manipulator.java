@@ -12,6 +12,8 @@ import service.manipulator.elements.Hinge;
 import service.manipulator.elements.Rod;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -301,16 +303,16 @@ public class Manipulator extends JPanel implements MouseListener{
     }
 
 
-    public void setToTarget(boolean onlyHingesMoves) {
+    public double setToTarget(boolean onlyHingesMoves) {
         MultidimensionalGlobalSearch globalSearch = setUpGlobalSearch(onlyHingesMoves);
         List<Double> result = null;
         String functionStr = buildFunctionStr(onlyHingesMoves);
         try {
 
 
-            result = globalSearch.findMinimum(true, obstacles);
+//            result = globalSearch.findMinimum(true, obstacles);
 //            result = MultidimensionalGlobalSearchLib.findMinimum(targetPoint.getX(), targetPoint.getY());
-//            result = MultidimensionalGlobalSearchLib.findMinimumJmetal(targetPoint.getX(), targetPoint.getY(), buildExpression(functionStr, onlyHingesMoves));
+            result = MultidimensionalGlobalSearchLib.findMinimumJmetal(targetPoint.getX(), targetPoint.getY(), buildExpression(functionStr, onlyHingesMoves));
 
 
             moveManipulator(result, onlyHingesMoves);
@@ -320,6 +322,8 @@ public class Manipulator extends JPanel implements MouseListener{
         } catch (NoSolutionExceptions e) {
             e.printStackTrace();
         }
+
+        return result.get(result.size() - 1);
     }
 
 //    public void animatedSetToTarget(int timeout, boolean onlyHingesMoves) {

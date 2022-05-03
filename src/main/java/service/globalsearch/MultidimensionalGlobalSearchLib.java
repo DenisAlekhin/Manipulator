@@ -16,6 +16,7 @@ import org.uma.jmetal.solution.DoubleSolution;
 import org.uma.jmetal.util.AlgorithmRunner;
 import org.uma.jmetal.util.JMetalLogger;
 import org.uma.jmetal.util.comparator.RankingAndCrowdingDistanceComparator;
+import service.Iterations;
 import service.globalsearch.jmetal.CustomProblem;
 import smile.math.BFGS;
 import smile.math.DifferentiableMultivariateFunction;
@@ -54,6 +55,7 @@ public class MultidimensionalGlobalSearchLib {
     }
 
     public static List<Double> findMinimumJmetal(double target_x, double target_y, Expression func){
+        Iterations.reset();
         //Define the optimization problem
         Problem<DoubleSolution> problem = new CustomProblem(target_x, target_y);
 
@@ -71,7 +73,7 @@ public class MultidimensionalGlobalSearchLib {
 
         //Register the component to the algorithm
         Algorithm<List<DoubleSolution>> algorithm = new NSGAIIBuilder<>(problem, crossover, mutation)
-                .setSelectionOperator(selection).setMaxEvaluations(25000).build();
+                .setSelectionOperator(selection).setMaxEvaluations(100000).build();
         //Run the algorithm with AlgorithmRunner
         AlgorithmRunner algorithmRunner = new AlgorithmRunner.Executor((Algorithm<?>) algorithm).execute();
 

@@ -1,37 +1,37 @@
 package visual.app;
 
+import service.Iterations;
 import service.manipulator.Manipulator;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.text.DecimalFormat;
 
 public class MainFrame extends JFrame{
     private JPanel mainPanel;
     private JSlider slider1;
     private JSlider slider2;
-    private JSlider slider3;
-    private JSlider slider4;
     private JSlider slider5;
-    private JSlider slider6;
     private JSlider slider7;
     private JSlider slider8;
     private JButton resetTargetButton;
     private JButton buttonMove;
-    private JButton btnGlbSearchSteps;
-    private JCheckBox checkBoxOnlyHingesMoves;
     private JButton addObstacleButton;
+    private JTable statistics;
     static Manipulator manipulator = new Manipulator();
     static JFrame frame = new MainFrame("Manipulator");
+    private Integer countOfRuns = 0;
     static boolean buttonClicked = false;
-    {
-        checkBoxOnlyHingesMoves.setSelected(true);
-    }
+    private DefaultTableModel model = new DefaultTableModel(null, new String[]{"№", "Distance", "Iterations"});
+    DecimalFormat df = new DecimalFormat("#.###");
     public MainFrame(String title) {
         super(title);
         actionListenersInit();
+        setUpTable();
     }
 
     private void actionListenersInit() {
@@ -50,24 +50,6 @@ public class MainFrame extends JFrame{
         slider2.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 manipulator.moveElement(4, slider2.getValue());
-                frame.repaint();
-            }
-        });
-        slider6.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                manipulator.moveElement(1, (double)slider6.getValue() / 100.0);
-                frame.repaint();
-            }
-        });
-        slider3.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                manipulator.moveElement(3, (double)slider3.getValue() / 100.0);
-                frame.repaint();
-            }
-        });
-        slider4.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                manipulator.moveElement(5, (double)slider4.getValue() / 100.0);
                 frame.repaint();
             }
         });
@@ -93,12 +75,10 @@ public class MainFrame extends JFrame{
         });
         buttonMove.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                manipulator.setToTarget(checkBoxOnlyHingesMoves.isSelected());
-            }
-        });
-        btnGlbSearchSteps.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-//                manipulator.animatedSetToTarget(150, checkBoxOnlyHingesMoves.isSelected());
+                Double result = manipulator.setToTarget(true);
+                countOfRuns++;
+                String[] data = {countOfRuns.toString(), df.format(result), Integer.toString(Iterations.get())};
+                model.addRow(data);
             }
         });
 
@@ -128,15 +108,15 @@ public class MainFrame extends JFrame{
         frame.setLocationRelativeTo(null);
         frame.setResizable(false);
         frame.add(manipulator);
-        frame.add(new MainFrame("Manipulator").mainPanel, BorderLayout.SOUTH);
+        frame.add(new MainFrame("Manipulator").mainPanel, BorderLayout.EAST);
         frame.addMouseListener(manipulator);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
         //moveToCenterScreen(frame);
         frame.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-//                System.out.println("x: " + e.getPoint().x);
-//                System.out.println("y: " + e.getPoint().y);
+                System.out.println("x: " + e.getPoint().x);
+                System.out.println("y: " + e.getPoint().y);
                 if(buttonClicked) {
                     manipulator.addObstacle(e.getPoint());
                 }
@@ -159,5 +139,9 @@ public class MainFrame extends JFrame{
         int max_height = (d.height - in.top - in.bottom);
 
         frame.setLocation((int) (max_width - frame.getWidth()) / 2, (int) (max_height - frame.getHeight() ) / 2);
+    }
+
+    private void setUpTable() {
+        statistics.setModel(model);
     }
 }

@@ -57,7 +57,8 @@ public class MultidimensionalGlobalSearch {
                     e.printStackTrace();
                 }
             }
-            log.info("Execution of the algorithm  took {} iterations", Iterations.get());
+            log.info("Execution of the algorithm took {} iterations", Iterations.get());
+
 
             return getResultWithLimitations(obstacles);
         } else {
