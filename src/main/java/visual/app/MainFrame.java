@@ -2,6 +2,7 @@ package visual.app;
 
 import service.Iterations;
 import service.manipulator.Manipulator;
+import service.model.Algorithm;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -22,6 +23,7 @@ public class MainFrame extends JFrame{
     private JButton buttonMove;
     private JButton addObstacleButton;
     private JTable statistics;
+    private JComboBox algorithm;
     static Manipulator manipulator = new Manipulator();
     static JFrame frame = new MainFrame("Manipulator");
     private Integer countOfRuns = 0;
@@ -32,6 +34,7 @@ public class MainFrame extends JFrame{
         super(title);
         actionListenersInit();
         setUpTable();
+        setUpList();
     }
 
     private void actionListenersInit() {
@@ -75,7 +78,8 @@ public class MainFrame extends JFrame{
         });
         buttonMove.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Double result = manipulator.setToTarget(true);
+                Algorithm algorithm = getAlgorithm();
+                Double result = manipulator.setToTarget(true, algorithm);
                 countOfRuns++;
                 String[] data = {countOfRuns.toString(), df.format(result), Integer.toString(Iterations.get())};
                 model.addRow(data);
@@ -143,5 +147,23 @@ public class MainFrame extends JFrame{
 
     private void setUpTable() {
         statistics.setModel(model);
+    }
+
+    private void setUpList(){
+        String[] items = {"Jmetal", "Local", "Strongin"};
+        algorithm.setModel(new DefaultComboBoxModel(items));
+    }
+
+    private Algorithm getAlgorithm() {
+        String selectedItem = (String)algorithm.getSelectedItem();
+        if(selectedItem.equals("Jmetal")){
+            return Algorithm.JMETAL;
+        } else if(selectedItem.equals("Local")) {
+            return Algorithm.LOCAL;
+        } else if(selectedItem.equals("Strongin")) {
+            return Algorithm.STRONGIN;
+        } else {
+            return Algorithm.JMETAL;
+        }
     }
 }

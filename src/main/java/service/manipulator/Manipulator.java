@@ -10,6 +10,7 @@ import service.globalsearch.MultidimensionalGlobalSearchLib;
 import service.manipulator.elements.Element;
 import service.manipulator.elements.Hinge;
 import service.manipulator.elements.Rod;
+import service.model.Algorithm;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -303,18 +304,16 @@ public class Manipulator extends JPanel implements MouseListener{
     }
 
 
-    public double setToTarget(boolean onlyHingesMoves) {
+    public double setToTarget(boolean onlyHingesMoves, Algorithm algorithm) {
         MultidimensionalGlobalSearch globalSearch = setUpGlobalSearch(onlyHingesMoves);
         List<Double> result = null;
         String functionStr = buildFunctionStr(onlyHingesMoves);
         try {
-
-
-//            result = globalSearch.findMinimum(true, obstacles);
-            result = globalSearch.findMinimumLocal(targetPoint.getX(), targetPoint.getY(), buildExpression(functionStr, onlyHingesMoves));
-//            result = MultidimensionalGlobalSearchLib.findMinimumJmetal(targetPoint.getX(), targetPoint.getY(), buildExpression(functionStr, onlyHingesMoves));
-
-
+            switch (algorithm) {
+                case LOCAL -> result = globalSearch.findMinimumLocal(targetPoint.getX(), targetPoint.getY(), buildExpression(functionStr, onlyHingesMoves));
+                case JMETAL -> result = MultidimensionalGlobalSearchLib.findMinimumJmetal(targetPoint.getX(), targetPoint.getY(), buildExpression(functionStr, onlyHingesMoves));
+                case STRONGIN -> result = globalSearch.findMinimum(true, obstacles);
+            }
             moveManipulator(result, onlyHingesMoves);
             setTwoLastElements();
             repaint();
