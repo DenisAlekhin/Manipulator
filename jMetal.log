@@ -2,9 +2,9 @@
 <!DOCTYPE log SYSTEM "logger.dtd">
 <log>
 <record>
-  <date>2022-05-10T13:49:03.116178100Z</date>
-  <millis>1652190543116</millis>
-  <nanos>178100</nanos>
+  <date>2022-05-10T17:03:55.809081300Z</date>
+  <millis>1652202235809</millis>
+  <nanos>81300</nanos>
   <sequence>0</sequence>
   <logger>org.uma.jmetal.util.JMetalLogger</logger>
   <level>INFO</level>
@@ -14,51 +14,15 @@
   <message>Loggers configured with null</message>
 </record>
 <record>
-  <date>2022-05-10T13:49:03.148913900Z</date>
-  <millis>1652190543148</millis>
-  <nanos>913900</nanos>
+  <date>2022-05-10T17:03:55.831896800Z</date>
+  <millis>1652202235831</millis>
+  <nanos>896800</nanos>
   <sequence>1</sequence>
   <logger>org.uma.jmetal.util.JMetalLogger</logger>
   <level>INFO</level>
-  <class>service.globalsearch.MultidimensionalGlobalSearchLib</class>
+  <class>app.globalsearch.multidimensional.MultidimensionalGlobalSearchLib</class>
   <method>findMinimumJmetal</method>
   <thread>18</thread>
-  <message>Total execution time: 1535ms</message>
-</record>
-<record>
-  <date>2022-05-10T13:49:09.863750500Z</date>
-  <millis>1652190549863</millis>
-  <nanos>750500</nanos>
-  <sequence>2</sequence>
-  <logger>org.uma.jmetal.util.JMetalLogger</logger>
-  <level>INFO</level>
-  <class>service.globalsearch.MultidimensionalGlobalSearchLib</class>
-  <method>findMinimumJmetal</method>
-  <thread>18</thread>
-  <message>Total execution time: 1161ms</message>
-</record>
-<record>
-  <date>2022-05-10T13:49:14.071311500Z</date>
-  <millis>1652190554071</millis>
-  <nanos>311500</nanos>
-  <sequence>3</sequence>
-  <logger>org.uma.jmetal.util.JMetalLogger</logger>
-  <level>INFO</level>
-  <class>service.globalsearch.MultidimensionalGlobalSearchLib</class>
-  <method>findMinimumJmetal</method>
-  <thread>18</thread>
-  <message>Total execution time: 1212ms</message>
-</record>
-<record>
-  <date>2022-05-10T13:49:18.803143600Z</date>
-  <millis>1652190558803</millis>
-  <nanos>143600</nanos>
-  <sequence>4</sequence>
-  <logger>org.uma.jmetal.util.JMetalLogger</logger>
-  <level>INFO</level>
-  <class>service.globalsearch.MultidimensionalGlobalSearchLib</class>
-  <method>findMinimumJmetal</method>
-  <thread>18</thread>
-  <message>Total execution time: 1132ms</message>
+  <message>Total execution time: 1629ms</message>
 </record>
 </log>

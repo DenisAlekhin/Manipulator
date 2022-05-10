@@ -1,15 +1,14 @@
 package visual.app;
 
-import service.Iterations;
-import service.manipulator.Manipulator;
-import service.model.Algorithm;
+import app.manipulator.Manipulator;
+import app.model.Algorithm;
+import app.service.Iterations;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.text.DecimalFormat;
 
 public class MainFrame extends JFrame{
@@ -24,73 +23,60 @@ public class MainFrame extends JFrame{
     private JButton addObstacleButton;
     private JTable statistics;
     private JComboBox algorithm;
+    private JTextField textFieldPrecision;
+    private JTextField textFieldLocalPrecision;
     static Manipulator manipulator = new Manipulator();
     static JFrame frame = new MainFrame("Manipulator");
     private Integer countOfRuns = 0;
     static boolean buttonClicked = false;
-    private DefaultTableModel model = new DefaultTableModel(null, new String[]{"№", "Distance", "Iterations"});
+    private final DefaultTableModel model = new DefaultTableModel(null, new String[]{"№", "Distance", "Iterations"});
     DecimalFormat df = new DecimalFormat("#.###");
     public MainFrame(String title) {
         super(title);
         actionListenersInit();
         setUpTable();
         setUpList();
+        setUpTextFields();
     }
 
     private void actionListenersInit() {
-        slider5.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                manipulator.moveElement(0, slider5.getValue());
-                frame.repaint();
-            }
+        slider5.addChangeListener(e -> {
+            manipulator.moveElement(0, slider5.getValue());
+            frame.repaint();
         });
-        slider1.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                manipulator.moveElement(2, slider1.getValue());
-                frame.repaint();
-            }
+        slider1.addChangeListener(e -> {
+            manipulator.moveElement(2, slider1.getValue());
+            frame.repaint();
         });
-        slider2.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                manipulator.moveElement(4, slider2.getValue());
-                frame.repaint();
-            }
+        slider2.addChangeListener(e -> {
+            manipulator.moveElement(4, slider2.getValue());
+            frame.repaint();
         });
-        slider7.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                manipulator.moveTarget(0, slider7.getValue());
-                frame.repaint();
-            }
+        slider7.addChangeListener(e -> {
+            manipulator.moveTarget(0, slider7.getValue());
+            frame.repaint();
         });
-        slider8.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                manipulator.moveTarget(1, (double)slider8.getValue() / 100.0);
-                frame.repaint();
-            }
+        slider8.addChangeListener(e -> {
+            manipulator.moveTarget(1, (double)slider8.getValue() / 100.0);
+            frame.repaint();
         });
-        resetTargetButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                slider7.setValue(0);
-                slider8.setValue(100);
-                manipulator.resetTarget();
-                frame.repaint();
-            }
+        resetTargetButton.addActionListener(e -> {
+            slider7.setValue(0);
+            slider8.setValue(100);
+            manipulator.resetTarget();
+            frame.repaint();
         });
-        buttonMove.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Algorithm algorithm = getAlgorithm();
-                Double result = manipulator.setToTarget(true, algorithm);
-                countOfRuns++;
-                String[] data = {countOfRuns.toString(), df.format(result), Integer.toString(Iterations.get())};
-                model.addRow(data);
-            }
+        buttonMove.addActionListener(e -> {
+            Algorithm algorithm = getAlgorithm();
+            Double precision = Double.valueOf(textFieldPrecision.getText());
+            Double localPrecision = Double.valueOf(textFieldLocalPrecision.getText());
+            Double result = manipulator.setToTarget(true, algorithm, precision, localPrecision);
+            countOfRuns++;
+            String[] data = {countOfRuns.toString(), df.format(result), Integer.toString(Iterations.get())};
+            model.addRow(data);
         });
 
-        addObstacleButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                buttonClicked = true;
-            }
-        });
+        addObstacleButton.addActionListener(e -> buttonClicked = true);
     }
 
     public static void main(String[] args) {
@@ -116,7 +102,6 @@ public class MainFrame extends JFrame{
         frame.addMouseListener(manipulator);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
-        //moveToCenterScreen(frame);
         frame.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
 //                System.out.println("x: " + e.getPoint().x);
@@ -133,18 +118,6 @@ public class MainFrame extends JFrame{
         });
     }
 
-    public static void moveToCenterScreen(JFrame frame) {
-        Toolkit kit = frame.getToolkit();
-        GraphicsDevice[] gs = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
-        Insets in = kit.getScreenInsets(gs[0].getDefaultConfiguration());
-        Dimension d = kit.getScreenSize();
-
-        int max_width = (d.width - in.left - in.right);
-        int max_height = (d.height - in.top - in.bottom);
-
-        frame.setLocation((int) (max_width - frame.getWidth()) / 2, (int) (max_height - frame.getHeight() ) / 2);
-    }
-
     private void setUpTable() {
         statistics.setModel(model);
     }
@@ -156,14 +129,16 @@ public class MainFrame extends JFrame{
 
     private Algorithm getAlgorithm() {
         String selectedItem = (String)algorithm.getSelectedItem();
-        if(selectedItem.equals("Jmetal")){
-            return Algorithm.JMETAL;
-        } else if(selectedItem.equals("Local")) {
-            return Algorithm.LOCAL;
-        } else if(selectedItem.equals("Strongin")) {
-            return Algorithm.STRONGIN;
-        } else {
-            return Algorithm.JMETAL;
-        }
+        return switch (selectedItem) {
+            case "Jmetal" -> Algorithm.JMETAL;
+            case "Local" -> Algorithm.LOCAL;
+            case "Strongin" -> Algorithm.STRONGIN;
+            default -> Algorithm.JMETAL;
+        };
+    }
+
+    private void setUpTextFields() {
+        textFieldLocalPrecision.setText("0.0000000001");
+        textFieldPrecision.setText("0.01");
     }
 }
