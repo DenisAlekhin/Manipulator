@@ -1,9 +1,5 @@
 package app.manipulator;
 
-import lombok.extern.slf4j.Slf4j;
-import net.objecthunter.exp4j.Expression;
-import net.objecthunter.exp4j.ExpressionBuilder;
-import org.apache.log4j.BasicConfigurator;
 import app.exceptions.NoSolutionExceptions;
 import app.globalsearch.multidimensional.MultidimensionalGlobalSearch;
 import app.globalsearch.multidimensional.MultidimensionalGlobalSearchLib;
@@ -11,9 +7,20 @@ import app.manipulator.elements.Element;
 import app.manipulator.elements.Hinge;
 import app.manipulator.elements.Rod;
 import app.model.Algorithm;
+import app.service.Iterations;
+import javafx.util.Pair;
+import lombok.extern.slf4j.Slf4j;
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
+import org.apache.log4j.BasicConfigurator;
 
 import javax.swing.*;
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
@@ -22,13 +29,20 @@ import java.awt.geom.Point2D;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
-import static app.utils.Constants.*;
+import static app.utils.Constants.FRAME_START_X;
+import static app.utils.Constants.FRAME_START_Y;
+import static app.utils.Constants.MANIP_START_X;
+import static app.utils.Constants.MANIP_START_Y;
+import static app.utils.Constants.OBSTACLE_RADIUS;
+import static app.utils.Constants.ROG_LENGTH;
 
 @Slf4j
 public class Manipulator extends JPanel implements MouseListener{
-    final double R = 3;
+    final double R = 2;
     final double EPSILON = 0.01;
     private ArrayList<Element> mechanism = new ArrayList();
     private ArrayList<Point2D> obstacles = new ArrayList();
@@ -267,9 +281,73 @@ public class Manipulator extends JPanel implements MouseListener{
         String functionStr = buildFunctionStr(onlyHingesMoves);
         try {
             switch (algorithm) {
-                case LOCAL -> result = globalSearch.findMinimumLocal(targetPoint.getX(), targetPoint.getY(), buildExpression(functionStr, onlyHingesMoves), precision, localPrecision);
-                case JMETAL -> result = MultidimensionalGlobalSearchLib.findMinimumJmetal(targetPoint.getX(), targetPoint.getY(), buildExpression(functionStr, onlyHingesMoves));
-                case STRONGIN -> result = globalSearch.findMinimum(true, obstacles, precision);
+                case LOCAL -> {
+                    List<Pair<Integer, Double>> res = new ArrayList<>();
+                    for(int p = 100; p <= 10000; p += 100) {
+                        result = globalSearch.findMinimumLocal(targetPoint.getX(), targetPoint.getY(), buildExpression(functionStr, onlyHingesMoves), precision, localPrecision, p);
+                        res.add(new Pair<Integer, Double>(Iterations.get(), result.get(2)));
+                        Iterations.reset();
+                    }
+
+                    System.out.println("Res: ");
+                    res.sort((p1, p2) -> Double.compare(p1.getKey(), p2.getKey()));
+                    for(int i = 0; i < res.size(); i++){
+                        System.out.print("(" + res.get(i).getKey() + "; " + res.get(i).getValue() + ") ");
+                    }
+                    System.out.println();
+                }
+                case JMETAL -> {
+                    List<List<Pair<Integer, Double>>> resultList = new ArrayList<>();
+                    for(int j = 0; j < 10; j++) {
+                        resultList.add(new ArrayList<>());
+                        for(int i = 100; i <= 10000; i += 100){
+                            result = MultidimensionalGlobalSearchLib.findMinimumJmetal(targetPoint.getX(), targetPoint.getY(), buildExpression(functionStr, onlyHingesMoves), i);
+                            resultList.get(j).add(new Pair<>(i, result.get(2)));
+//                            log.info("({},{})", i, result.get(2));
+                        }
+                    }
+                    List<Pair<Integer, Double>> min = new ArrayList<>();
+                    List<Pair<Integer, Double>> max = new ArrayList<>();
+                    List<Pair<Integer, Double>> avg = new ArrayList<>();
+                    for(int j = 0; j < resultList.get(0).size(); j++) {
+                        final int finalJ = j;
+                        min.add(new Pair<>(resultList.get(0).get(finalJ).getKey(), resultList.stream().mapToDouble(list -> list.get(finalJ).getValue()).min().getAsDouble()));
+                        max.add(new Pair<>(resultList.get(0).get(finalJ).getKey(), resultList.stream().mapToDouble(list -> list.get(finalJ).getValue()).max().getAsDouble()));
+                        avg.add(new Pair<>(resultList.get(0).get(finalJ).getKey(), resultList.stream().mapToDouble(list -> list.get(finalJ).getValue()).average().getAsDouble()));
+                        log.info("{} iterations: min={}, max={}, avg={}", resultList.get(0).get(finalJ).getKey(), min, max, avg);
+                    }
+                    System.out.println("Min : ");
+                    for(int i = 0; i < min.size(); i++){
+                        System.out.print("(" + min.get(i).getKey() + "; " + min.get(i).getValue() + ") ");
+                    }
+                    System.out.println();
+
+                    System.out.println("Max : ");
+                    for(int i = 0; i < max.size(); i++){
+                        System.out.print("(" + max.get(i).getKey() + "; " + max.get(i).getValue() + ") ");
+                    }
+                    System.out.println();
+
+                    System.out.println("Avg : ");
+                    for(int i = 0; i < avg.size(); i++){
+                        System.out.print("(" + avg.get(i).getKey() + "; " + avg.get(i).getValue() + ") ");
+                    }
+                    System.out.println();
+                }
+                case STRONGIN -> {
+                    List<Pair<Double, Double>> res = new ArrayList<>();
+                    for(double p = 0.01; p <= 1.0; p += 0.001) {
+                        result = globalSearch.findMinimum(true, obstacles, p, 50000);
+                        res.add(new Pair<Double, Double>(result.get(3), result.get(2)));
+                    }
+
+                    System.out.println("Res: ");
+                    res.sort((p1, p2) -> Double.compare(p1.getKey(), p2.getKey()));
+                    for(int i = 0; i < res.size(); i++){
+                        System.out.print("(" + res.get(i).getKey() + "; " + res.get(i).getValue() + ") ");
+                    }
+                    System.out.println();
+                }
             }
             moveManipulator(result, onlyHingesMoves);
             setTwoLastElements();

@@ -34,7 +34,7 @@ import static app.utils.Constants.*;
 @Slf4j
 public class MultidimensionalGlobalSearchLib {
 
-    public static List<Double> findMinimumJmetal(double target_x, double target_y, Expression func){
+    public static List<Double> findMinimumJmetal(double target_x, double target_y, Expression func, int maxIterations){
         Iterations.reset();
         Problem<DoubleSolution> problem = new CustomProblem(target_x, target_y);
 
@@ -48,10 +48,10 @@ public class MultidimensionalGlobalSearchLib {
                 new RankingAndCrowdingDistanceComparator<>());
 
         Algorithm<List<DoubleSolution>> algorithm = new NSGAIIBuilder<>(problem, crossover, mutation)
-                .setSelectionOperator(selection).setMaxEvaluations(100000).build();
+                .setSelectionOperator(selection).setMaxEvaluations(maxIterations).build();
         AlgorithmRunner algorithmRunner = new AlgorithmRunner.Executor(algorithm).execute();
 
-        JMetalLogger.logger.info("Total execution time: "+ algorithmRunner.getComputingTime() + "ms");
+//        JMetalLogger.logger.info("Total execution time: "+ algorithmRunner.getComputingTime() + "ms");
 
         return getResult(algorithm.getResult(), func);
     }
@@ -77,11 +77,13 @@ public class MultidimensionalGlobalSearchLib {
 
         NelderMead optimizer = new NelderMead();
         assumption.remove(2);
-        Vec guess = new DenseVector(assumption);
+        Vec guess = new DenseVector(2);
+        guess.set(0, assumption.get(0));
+        guess.set(1, assumption.get(1));
         List<Vec> guesses = new ArrayList<>();
         guesses.add(guess);
-        Vec result = optimizer.optimize(localPrecision, 50000, funcToCalc, guesses);
-        log.debug(result.toString());
+        Vec result = optimizer.optimize(localPrecision, 70, funcToCalc, guesses);
+//        log.debug(result.toString());
         return getResult(result, func);
     }
 

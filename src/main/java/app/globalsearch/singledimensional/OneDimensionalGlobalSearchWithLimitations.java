@@ -33,7 +33,7 @@ public class OneDimensionalGlobalSearchWithLimitations {
         this.distanceToObstacles = distanceToObstacles;
     }
 
-    public Pair<Double, Double> findMinimum(Boolean oneIteration) throws Exception{
+    public Pair<Double, Double> findMinimum(Boolean oneIteration, int maxIter) throws Exception{
         setUp(oneIteration);
 
         boolean newPointCorrespondLimitations = true;
@@ -49,7 +49,7 @@ public class OneDimensionalGlobalSearchWithLimitations {
             if(oneIteration) {
                 newPointCorrespondLimitations = distanceToObstacles.pointCorrespondLimitations(analysis.get(analysis.size() - 1).getKey());
             }
-            isLastIteration = Math.abs(analysis.get(t).getKey() - analysis.get(t - 1).getKey()) < E;
+            isLastIteration = Math.abs(analysis.get(t).getKey() - analysis.get(t - 1).getKey()) < E || Iterations.get() > maxIter;
             Iterations.add(1);
         } while (!(isLastIteration || oneIteration) || !newPointCorrespondLimitations);
 

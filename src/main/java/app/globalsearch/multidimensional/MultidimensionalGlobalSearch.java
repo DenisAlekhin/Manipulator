@@ -36,7 +36,7 @@ public class MultidimensionalGlobalSearch {
     private List<OneDimensionalGlobalSearchWithLimitations> oneDimensionalGlobalSearchesWithLimitations;
     private List<Double> variables;
 
-    public List<Double> findMinimum(boolean withLimitations, ArrayList<Point2D> obstacles, Double precision){
+    public List<Double> findMinimum(boolean withLimitations, ArrayList<Point2D> obstacles, Double precision, int maxIter){
         E = precision;
         Iterations.reset();
         setUp(withLimitations, obstacles);
@@ -46,7 +46,7 @@ public class MultidimensionalGlobalSearch {
                 oneDimensionalGlobalSearchesWithLimitations.get(0).setDistanceToObstaclesVariables(variables);
                 Pair<Double, Double> executionResult;
                 try {
-                    executionResult = oneDimensionalGlobalSearchesWithLimitations.get(0).findMinimum(false);
+                    executionResult = oneDimensionalGlobalSearchesWithLimitations.get(0).findMinimum(false, maxIter);
                     variables.set(0, executionResult.getKey());
                 } catch (NoSolutionExceptions ignored) {
                 } catch (Exception e) {
@@ -56,7 +56,7 @@ public class MultidimensionalGlobalSearch {
                 oneDimensionalGlobalSearchesWithLimitations.get(1).setFunction(getOneDimensionalFunction(1, variables));
                 oneDimensionalGlobalSearchesWithLimitations.get(1).setDistanceToObstaclesVariables(variables);
                 try {
-                    executionResult = oneDimensionalGlobalSearchesWithLimitations.get(1).findMinimum(true);
+                    executionResult = oneDimensionalGlobalSearchesWithLimitations.get(1).findMinimum(true, maxIter);
                     variables.set(1, executionResult.getKey());
                     analysis.add(new ArrayList<>(variables));
                     analysis.get(analysis.size() - 1).add(executionResult.getValue());
@@ -64,9 +64,10 @@ public class MultidimensionalGlobalSearch {
                     e.printStackTrace();
                 }
             }
-            log.info("Execution of the algorithm took {} iterations", Iterations.get());
-
-            return getResultWithLimitations(obstacles);
+//            log.info("Execution of the algorithm took {} iterations", Iterations.get());
+            List<Double> res = getResultWithLimitations(obstacles);
+            res.add((double)Iterations.get());
+            return res;
         } else {
             while(!oneDimensionalGlobalSearches.get(0).isLastIteration()){
                 oneDimensionalGlobalSearches.get(1).setFunction(getOneDimensionalFunction(1, variables));
@@ -144,10 +145,20 @@ public class MultidimensionalGlobalSearch {
         return analysis.stream().min(Comparator.comparingDouble(v -> v.get(v.size() - 1))).orElseThrow(() -> new NoSolutionExceptions("Error: нет решения"));
     }
 
-    public List<Double> findMinimumLocal(double target_x, double target_y, Expression func, Double precision, Double localPrecision) {
+    public List<Double> findMinimumLocal(double target_x, double target_y, Expression func, Double precision, Double localPrecision, int maxIter) {
         Iterations.reset();
         E = precision;
-        List<Double> assumption = findMinimum(true, new ArrayList<>(), precision);
-        return MultidimensionalGlobalSearchLib.findMinimumNelderMead(target_x, target_y, func, assumption, localPrecision);
+        List<Double> assumption = findMinimum(true, new ArrayList<>(), precision, maxIter);
+        int globalIter = Iterations.get();
+//        Iterations.reset();
+        List<Double> result =  MultidimensionalGlobalSearchLib.findMinimumNelderMead(target_x, target_y, func, assumption, localPrecision);
+        func.setVariable("x0", assumption.get(0));
+        func.setVariable("x1", assumption.get(1));
+        log.debug("Для точности АГП E = {} и количестве итераций = {} при точности локального алгоритма: {}", E, maxIter, localPrecision);
+        log.debug("Результат: {}", assumption);
+        log.debug("Итераций в глобальном алгоритме: {}, итераций в локальном алгоритме: {}",globalIter, Iterations.get());
+        log.debug("Расстояние до целевой точки до применения локального алгоритма: {}, после применения: {}",func.evaluate(), result.get(2));
+        log.debug("");
+        return result;
     }
 }

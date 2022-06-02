@@ -104,8 +104,8 @@ public class MainFrame extends JFrame{
         frame.setVisible(true);
         frame.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-//                System.out.println("x: " + e.getPoint().x);
-//                System.out.println("y: " + e.getPoint().y);
+                System.out.println("x: " + e.getPoint().x);
+                System.out.println("y: " + e.getPoint().y);
                 if(buttonClicked) {
                     manipulator.addObstacle(e.getPoint());
                 }

@@ -1,7 +1,7 @@
 package app.utils;
 
 public class Constants {
-    public static final Integer FRAME_START_X = 8;
+    public static final Integer FRAME_START_X = 7;
     public static final Integer FRAME_START_Y = 31;
     public static final Integer SCR_COORD_MANIP_START_X = 83;
     public static final Integer SCR_COORD_MANIP_START_Y = 311;
